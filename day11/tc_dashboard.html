@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transaction Certificate Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #00e5a0;
+    --accent2: #0ea5e9;
+    --accent3: #f59e0b;
+    --accent4: #e879f9;
+    --text: #f0f4ff;
+    --muted: #6b7a99;
+    --border: #1e2d45;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-left {}
+
+  .day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.3);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .day-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  .title span {
+    color: var(--accent);
+    position: relative;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .company-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent2);
+    background: rgba(14,165,233,0.1);
+    border: 1px solid rgba(14,165,233,0.25);
+    padding: 4px 12px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    align-self: flex-start;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .stat-card:nth-child(1)::after { background: var(--accent); }
+  .stat-card:nth-child(2)::after { background: var(--accent2); }
+  .stat-card:nth-child(3)::after { background: var(--accent3); }
+  .stat-card:nth-child(4)::after { background: var(--accent4); }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0,229,160,0.3);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-card:nth-child(1) .stat-value { color: var(--accent); }
+  .stat-card:nth-child(2) .stat-value { color: var(--accent2); }
+  .stat-card:nth-child(3) .stat-value { color: var(--accent3); }
+  .stat-card:nth-child(4) .stat-value { color: var(--accent4); }
+
+  .stat-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* TC Types section */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .tc-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .tc-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: default;
+  }
+
+  .tc-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .tc-chip.green  { color: var(--accent);  border-color: rgba(0,229,160,0.35); background: rgba(0,229,160,0.07); }
+  .tc-chip.blue   { color: var(--accent2); border-color: rgba(14,165,233,0.35); background: rgba(14,165,233,0.07); }
+  .tc-chip.amber  { color: var(--accent3); border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.07); }
+  .tc-chip.pink   { color: var(--accent4); border-color: rgba(232,121,249,0.35); background: rgba(232,121,249,0.07); }
+
+  /* Main table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  .table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .table-header-bar h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active {
+    background: rgba(0,229,160,0.1);
+    border-color: rgba(0,229,160,0.4);
+    color: var(--accent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(30,45,69,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(0,229,160,0.03); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 11px 14px;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  .td-muted { color: var(--muted); }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-yes  { background: rgba(0,229,160,0.12); color: var(--accent); }
+  .badge-no   { background: rgba(107,122,153,0.15); color: var(--muted); }
+  .badge-comp { background: rgba(14,165,233,0.12); color: var(--accent2); }
+  .badge-pen  { background: rgba(245,158,11,0.12); color: var(--accent3); }
+  .badge-late { background: rgba(239,68,68,0.12); color: #f87171; }
+  .badge-ot   { background: rgba(0,229,160,0.12); color: var(--accent); }
+
+  /* Progress bar section */
+  .progress-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .prog-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .prog-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .prog-item {
+    margin-bottom: 14px;
+  }
+
+  .prog-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .prog-label-row span:last-child {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .prog-bar-bg {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .prog-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+
+  /* Footer tag */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 11px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.5px;
+  }
+
+  .footer span {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .progress-section { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="day-badge">Day 11 · LinkedIn Series</div>
+      <h1 class="title">Transaction<br><span>Certificate</span> Tracker</h1>
+      <p class="subtitle">Sustainable Textile Compliance Dashboard · IntelliSync ERP</p>
+    </div>
+    <div class="company-tag">@ IntelliSync</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Styles</div>
+      <div class="stat-value">248</div>
+      <div class="stat-sub">Across all buyers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">TC Required</div>
+      <div class="stat-value">174</div>
+      <div class="stat-sub">70.2% of orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value">131</div>
+      <div class="stat-sub">75.3% fulfilled</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">On Time</div>
+      <div class="stat-value">89%</div>
+      <div class="stat-sub">vs target date</div>
+    </div>
+  </div>
+
+  <!-- TC Types -->
+  <div class="section-title">TC Type Coverage</div>
+  <div class="tc-types">
+    <span class="tc-chip green">♻ RECYCLE</span>
+    <span class="tc-chip blue">🌿 BCI</span>
+    <span class="tc-chip amber">OCS</span>
+    <span class="tc-chip pink">RCS</span>
+    <span class="tc-chip green">GOTS</span>
+    <span class="tc-chip blue">ECOVERO</span>
+    <span class="tc-chip amber">LIVA ECO</span>
+    <span class="tc-chip pink">LENZING</span>
+    <span class="tc-chip green">OEKO-TEX</span>
+    <span class="tc-chip blue">BLUESIGN</span>
+    <span class="tc-chip amber">+ MORE</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-header-bar">
+      <h3>Style-wise TC Report</h3>
+      <div class="filters">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">TC Required</button>
+        <button class="filter-btn">Pending</button>
+        <button class="filter-btn">Late</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>PO No.</th>
+            <th>Buyer</th>
+            <th>Style</th>
+            <th>Color</th>
+            <th>TC Req</th>
+            <th>TC Type</th>
+            <th>PO Qty</th>
+            <th>Rcv Qty</th>
+            <th>TC Status</th>
+            <th>On Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Sunrise Fab</td>
+            <td class="td-muted">PO-2401</td>
+            <td>H&M</td>
+            <td>STY-881</td>
+            <td>Ivory</td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td class="td-muted">GOTS</td>
+            <td>1200</td>
+            <td>1200</td>
+            <td><span class="badge badge-comp">Complete</span></td>
+            <td><span class="badge badge-ot">On Time</span></td>
+          </tr>
+          <tr>
+            <td>BlueStar Tex</td>
+            <td class="td-muted">PO-2387</td>
+            <td>Zara</td>
+            <td>STY-442</td>
+            <td>Navy</td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td class="td-muted">BCI</td>
+            <td>800</td>
+            <td>640</td>
+            <td><span class="badge badge-pen">Pending</span></td>
+            <td><span class="badge badge-late">Late</span></td>
+          </tr>
+          <tr>
+            <td>GreenWeft</td>
+            <td class="td-muted">PO-2412</td>
+            <td>M&S</td>
+            <td>STY-309</td>
+            <td>Olive</td>
+            <td><span class="badge badge-no">NO</span></td>
+            <td class="td-muted">—</td>
+            <td>2000</td>
+            <td>2000</td>
+            <td><span class="badge badge-no">N/A</span></td>
+            <td><span class="badge badge-ot">On Time</span></td>
+          </tr>
+          <tr>
+            <td>Sunrise Fab</td>
+            <td class="td-muted">PO-2398</td>
+            <td>Next</td>
+            <td>STY-774</td>
+            <td>White</td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td class="td-muted">ECOVERO</td>
+            <td>1500</td>
+            <td>900</td>
+            <td><span class="badge badge-pen">Pending</span></td>
+            <td><span class="badge badge-ot">On Time</span></td>
+          </tr>
+          <tr>
+            <td>EcoThread</td>
+            <td class="td-muted">PO-2421</td>
+            <td>C&A</td>
+            <td>STY-563</td>
+            <td>Sage</td>
+            <td><span class="badge badge-yes">YES</span></td>
+            <td class="td-muted">RCS</td>
+            <td>600</td>
+            <td>600</td>
+            <td><span class="badge badge-comp">Complete</span></td>
+            <td><span class="badge badge-ot">On Time</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Progress Bars -->
+  <div class="progress-section">
+    <div class="prog-card">
+      <div class="prog-title">TC Type Distribution</div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>GOTS</span><span style="color:var(--accent)">34%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:34%;background:var(--accent)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>BCI</span><span style="color:var(--accent2)">22%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:22%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>ECOVERO</span><span style="color:var(--accent3)">18%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:18%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>RCS / OCS</span><span style="color:var(--accent4)">15%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:15%;background:var(--accent4)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>Others</span><span>11%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:11%;background:var(--muted)"></div></div>
+      </div>
+    </div>
+
+    <div class="prog-card">
+      <div class="prog-title">Fulfilment by Buyer</div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>H&M</span><span style="color:var(--accent)">92%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:92%;background:var(--accent)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>Zara</span><span style="color:var(--accent2)">61%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:61%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>M&S</span><span style="color:var(--accent3)">88%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:88%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>Next</span><span style="color:var(--accent4)">74%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:74%;background:var(--accent4)"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-label-row"><span>C&A</span><span style="color:var(--accent)">100%</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:100%;background:var(--accent)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built with ❤ at <span>IntelliSync</span> · Transaction Certificate Compliance Module · Day 11 of Daily LinkedIn Series
+  </div>
+
+</div>
+</body>
+</html>

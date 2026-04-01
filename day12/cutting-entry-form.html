@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Actual Cutting Entry — IntelliSync ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #181c27;
+      --card: #1e2333;
+      --border: #2a3050;
+      --border-focus: #4f6ef7;
+      --accent: #4f6ef7;
+      --accent-2: #38d9a9;
+      --text-primary: #e8ecf8;
+      --text-secondary: #7b8ab8;
+      --text-muted: #4a5580;
+      --danger: #f25c5c;
+      --success: #38d9a9;
+      --warning: #f9a825;
+      --input-bg: #141827;
+      --label-size: 0.72rem;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 32px 24px;
+    }
+
+    /* Background grid pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79, 110, 247, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 110, 247, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.85); }
+    }
+
+    .title-block h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .title-block p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Toggle */
+    .toggle-group {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .toggle-btn {
+      padding: 6px 18px;
+      border-radius: 50px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(79,110,247,0.4);
+    }
+
+    .btn-ghost {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Form Card */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(79,110,247,0.12);
+      border: 1px solid rgba(79,110,247,0.25);
+      border-radius: 4px;
+      padding: 2px 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+    }
+
+    /* Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      padding: 24px;
+      gap: 20px 20px;
+    }
+
+    .form-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .form-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .form-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+
+    /* Field */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .field label {
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .required-dot {
+      color: var(--danger);
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    .field input,
+    .field select {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .field input::placeholder { color: var(--text-muted); }
+    .field select { cursor: pointer; }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,110,247,0.15);
+    }
+
+    /* Custom select wrapper */
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 0.75rem;
+    }
+
+    /* Tag input style */
+    .tag-field {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      min-height: 44px;
+      cursor: text;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .tag-field:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,110,247,0.15);
+    }
+
+    .tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(79,110,247,0.15);
+      border: 1px solid rgba(79,110,247,0.3);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .tag .remove {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .tag .remove:hover { color: var(--danger); }
+
+    .tag-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      flex: 1;
+      min-width: 80px;
+    }
+
+    /* Info badge */
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+
+    .info-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .info-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* Divider */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 24px;
+    }
+
+    /* Footer */
+    .form-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-outline {
+      padding: 10px 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+    }
+
+    .btn-save {
+      padding: 10px 32px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(79,110,247,0.35);
+      letter-spacing: 0.03em;
+    }
+
+    .btn-save:hover {
+      background: #3d5ce8;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(79,110,247,0.5);
+    }
+
+    .btn-save:active { transform: translateY(0); }
+
+    /* Status badges */
+    .status-bar {
+      display: flex;
+      gap: 16px;
+      padding: 12px 24px;
+      background: rgba(79,110,247,0.04);
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .dot-green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .dot-yellow { background: var(--warning); }
+    .dot-gray { background: var(--text-muted); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid.cols-6 { grid-template-columns: repeat(3, 1fr); }
+      .span-2, .span-3, .span-4 { grid-column: span 1; }
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid.cols-6 { grid-template-columns: repeat(2, 1fr); }
+      .header { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* Tooltip */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2a3050;
+      color: var(--text-primary);
+      font-size: 0.68rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-dot"></div>
+      <div class="title-block">
+        <h1>Actual Cutting Entry</h1>
+        <p>IntelliSync ERP · Production Module</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="toggle-group">
+        <button class="toggle-btn active" onclick="setMode(this,'in-house')">In-House</button>
+        <button class="toggle-btn" onclick="setMode(this,'contractor')">Contractor</button>
+      </div>
+      <button class="btn-ghost">
+        <span>🕐</span> History
+      </button>
+      <button class="btn-ghost">
+        <span>?</span> Help
+      </button>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <div class="status-item"><div class="status-dot dot-green"></div> System Ready</div>
+      <div class="status-item"><div class="status-dot dot-yellow"></div> Layer #0012 In Progress</div>
+      <div class="status-item"><div class="status-dot dot-gray"></div> Last Saved: —</div>
+    </div>
+
+    <!-- Section: Order Details -->
+    <div class="section-header">
+      <span class="section-tag">01</span>
+      <span class="section-title">Order Identification</span>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Buyer <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Buyer</option>
+            <option>H&M</option>
+            <option>Zara</option>
+            <option>Gap</option>
+            <option>Marks & Spencer</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Style No <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Style</option>
+            <option>STY-2024-001</option>
+            <option>STY-2024-002</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Order No <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Order No</option>
+            <option>ORD-10234</option>
+            <option>ORD-10235</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Color <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Color</option>
+            <option>Navy Blue</option>
+            <option>Off White</option>
+            <option>Olive Green</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Section: Fabric & Cutting Master -->
+    <div class="section-header">
+      <span class="section-tag">02</span>
+      <span class="section-title">Fabric & Cutting Details</span>
+    </div>
+    <div class="form-grid">
+      <div class="field span-2">
+        <label>Fabric Detail <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Fabric Detail</option>
+            <option>100% Cotton — 60s — Woven</option>
+            <option>65/35 PC — 40s — Knit</option>
+            <option>Organic Cotton — GOTS Certified</option>
+          </select>
+        </div>
+      </div>
+      <div class="field span-2">
+        <label>Cutting Master <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Cut Master</option>
+            <option>Ramesh Kumar</option>
+            <option>Suresh Singh</option>
+            <option>Anil Verma</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Order Qty</label>
+        <input type="number" value="0" min="0"/>
+      </div>
+      <div class="field">
+        <label>Order Ex Qty</label>
+        <input type="number" value="0" min="0"/>
+      </div>
+      <div class="field span-2">
+        <label>Order Date</label>
+        <input type="datetime-local"/>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Section: Layer Info -->
+    <div class="section-header">
+      <span class="section-tag">03</span>
+      <span class="section-title">Layer Information</span>
+    </div>
+    <div class="form-grid cols-6">
+      <div class="field">
+        <label>Layer No <span class="required-dot">*</span></label>
+        <input type="number" value="0" min="0"/>
+      </div>
+      <div class="field">
+        <label>Table No <span class="required-dot">*</span></label>
+        <input type="number" value="0" min="0"/>
+      </div>
+      <div class="field">
+        <label>Fabric Used <span class="required-dot">*</span></label>
+        <input type="number" value="0.00" step="0.01"/>
+      </div>
+      <div class="field">
+        <label>Gross Avg <span class="required-dot">*</span></label>
+        <input type="number" value="0.00" step="0.01"/>
+      </div>
+      <div class="field span-2">
+        <label>Layer Start DateTime <span class="required-dot">*</span></label>
+        <input type="datetime-local"/>
+      </div>
+
+      <div class="field span-2">
+        <label>Layer Cut Start</label>
+        <input type="datetime-local"/>
+      </div>
+      <div class="field span-2">
+        <label>Layer Cut End <span class="required-dot">*</span></label>
+        <input type="datetime-local"/>
+      </div>
+      <div class="field span-2">
+        <label>Layer End DateTime</label>
+        <input type="datetime-local"/>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Section: Cut Details -->
+    <div class="section-header">
+      <span class="section-tag">04</span>
+      <span class="section-title">Cut & Floor Details</span>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Plies <span class="required-dot">*</span></label>
+        <input type="number" value="0" min="0"/>
+      </div>
+      <div class="field">
+        <label>UOM</label>
+        <input type="text" placeholder="UOM"/>
+      </div>
+      <div class="field">
+        <label>No of PCS Cut</label>
+        <input type="number" value="0" min="0"/>
+      </div>
+      <div class="field">
+        <label>Style Panel <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Style Panel</option>
+            <option>Front</option>
+            <option>Back</option>
+            <option>Sleeve</option>
+            <option>Collar</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Cutting Type <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Type</option>
+            <option>Auto</option>
+            <option>Manual</option>
+            <option>Die Cut</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Select Unit <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Unit</option>
+            <option>Unit A</option>
+            <option>Unit B</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Select Floor <span class="required-dot">*</span></label>
+        <div class="select-wrap">
+          <select>
+            <option value="" disabled selected>Select Floor</option>
+            <option>Floor 1</option>
+            <option>Floor 2</option>
+            <option>Floor 3</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Size Wise Breakup</label>
+        <input type="text" placeholder="No data available" readonly style="color: var(--text-muted);"/>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Section: Tags -->
+    <div class="section-header">
+      <span class="section-tag">05</span>
+      <span class="section-title">Delivery, Sizes & Ratios</span>
+    </div>
+    <div class="form-grid">
+      <div class="field span-2">
+        <label>Delivery Dates <span class="required-dot">*</span></label>
+        <div class="tag-field" id="dateTagField">
+          <div class="tag">Select delivery date <span class="remove" onclick="removeTag(this)">×</span></div>
+          <input class="tag-input" type="text" placeholder="Add date…"/>
+        </div>
+        <div class="select-wrap" style="margin-top:6px;">
+          <select onchange="addTagFromSelect('dateTagField',this)">
+            <option value="" disabled selected>Delivery Dates</option>
+            <option>2024-05-15</option>
+            <option>2024-06-01</option>
+            <option>2024-06-30</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Select Sizes <span class="required-dot">*</span></label>
+        <div class="tag-field" id="sizeTagField">
+          <div class="tag">Select a size <span class="remove" onclick="removeTag(this)">×</span></div>
+          <input class="tag-input" type="text" placeholder="Add size…"/>
+        </div>
+        <div class="select-wrap" style="margin-top:6px;">
+          <select onchange="addTagFromSelect('sizeTagField',this)">
+            <option value="" disabled selected>Select Sizes</option>
+            <option>XS</option><option>S</option><option>M</option>
+            <option>L</option><option>XL</option><option>XXL</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Ratio <span class="required-dot">*</span></label>
+        <div class="tag-field" id="ratioTagField">
+          <div class="tag">Select a Ratio <span class="remove" onclick="removeTag(this)">×</span></div>
+          <input class="tag-input" type="text" placeholder="Add ratio…"/>
+        </div>
+        <div class="select-wrap" style="margin-top:6px;">
+          <select onchange="addTagFromSelect('ratioTagField',this)">
+            <option value="" disabled selected>Select Ratios</option>
+            <option>1:1:2:2:1:1</option>
+            <option>1:2:2:1</option>
+            <option>2:3:3:2</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer">
+      <div class="footer-meta">IntelliSync ERP v2.4 · Cutting Module · Layer Entry</div>
+      <div class="footer-actions">
+        <button class="btn-outline" onclick="resetForm()">Reset</button>
+        <button class="btn-save" onclick="saveForm()">SAVE ENTRY</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function setMode(btn, mode) {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function removeTag(el) {
+    el.closest('.tag').remove();
+  }
+
+  function addTagFromSelect(fieldId, select) {
+    if (!select.value) return;
+    const field = document.getElementById(fieldId);
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `${select.value} <span class="remove" onclick="removeTag(this)">×</span>`;
+    const input = field.querySelector('.tag-input');
+    field.insertBefore(tag, input);
+    select.selectedIndex = 0;
+  }
+
+  function resetForm() {
+    if (confirm('Reset all fields?')) {
+      document.querySelectorAll('input[type="number"]').forEach(i => i.value = i.defaultValue);
+      document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+      document.querySelectorAll('input[type="datetime-local"]').forEach(i => i.value = '');
+    }
+  }
+
+  function saveForm() {
+    const btn = document.querySelector('.btn-save');
+    btn.textContent = 'Saving…';
+    btn.style.background = '#38d9a9';
+    setTimeout(() => {
+      btn.textContent = '✓ Saved!';
+      setTimeout(() => { btn.textContent = 'SAVE ENTRY'; btn.style.background = ''; }, 1500);
+    }, 800);
+
+    // Update status bar
+    const now = new Date().toLocaleTimeString();
+    document.querySelector('.status-bar .status-item:last-child').innerHTML =
+      `<div class="status-dot dot-green"></div> Last Saved: ${now}`;
+  }
+</script>
+</body>
+</html>

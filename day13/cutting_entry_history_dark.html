@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cutting Entry History — FabricFlow ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg-base: #0d0f12;
+  --bg-surface: #141720;
+  --bg-elevated: #1a1e2a;
+  --bg-hover: #1f2435;
+  --border: #252a38;
+  --border-light: #2e3448;
+  --accent: #4f8ef7;
+  --accent-dim: rgba(79,142,247,0.12);
+  --accent-glow: rgba(79,142,247,0.25);
+  --green: #3ecf82;
+  --green-dim: rgba(62,207,130,0.12);
+  --amber: #f0a84a;
+  --amber-dim: rgba(240,168,74,0.12);
+  --red: #f26e6e;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8b91a8;
+  --text-muted: #555c74;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'DM Sans', sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.container { position: relative; z-index: 1; max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 2rem;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon {
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  background: var(--accent-dim); border: 1px solid var(--accent-glow);
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.brand-name { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0.04em; }
+.brand-ver { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+/* ── PAGE HEADER ── */
+.header { margin-bottom: 1.5rem; }
+.page-title { font-size: 22px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+.page-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* ── STATS ROW ── */
+.stats-row { display: flex; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.stat-card {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 14px 20px;
+  display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: var(--border-light); }
+.stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.stat-val { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--text-primary); }
+.stat-val.accent { color: var(--accent); }
+.stat-val.green { color: var(--green); }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 1rem; flex-wrap: wrap;
+}
+.search-wrap { position: relative; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.search-box {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 12px 8px 34px;
+  font-size: 13px; font-family: var(--font-sans); color: var(--text-primary);
+  width: 240px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-box::placeholder { color: var(--text-muted); }
+.search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.count-badge {
+  font-size: 12px; color: var(--text-muted); padding: 6px 12px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-family: var(--font-mono);
+}
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: var(--bg-elevated); }
+th {
+  padding: 11px 14px; text-align: left; font-weight: 500; font-size: 11px;
+  color: var(--text-muted); border-bottom: 1px solid var(--border);
+  white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-mono);
+}
+td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text-primary); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+.sn-cell { color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; }
+
+.cut-link {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  color: var(--accent); cursor: pointer; letter-spacing: 0.02em;
+  border-bottom: 1px dashed var(--accent-glow);
+  transition: color 0.15s, border-color 0.15s;
+}
+.cut-link:hover { color: #7fb3ff; border-color: #7fb3ff; }
+
+.badge { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 600; display: inline-block; letter-spacing: 0.03em; }
+.b-inhouse { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,130,0.2); }
+.b-cut { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(240,168,74,0.2); }
+
+.sizes-wrap { display: flex; gap: 4px; flex-wrap: wrap; }
+.sz {
+  font-size: 10px; padding: 2px 7px; border-radius: 20px;
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  color: var(--text-secondary); font-family: var(--font-mono); font-weight: 500;
+}
+.pcs-num { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 13px; }
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-surface); border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg); width: 580px; max-width: 95vw; max-height: 88vh;
+  overflow-y: auto; box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  transform: translateY(8px); transition: transform 0.2s;
+}
+.overlay.show .modal { transform: translateY(0); }
+
+.modal-head {
+  padding: 1.25rem 1.5rem 1rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.modal-title { font-family: var(--font-mono); font-size: 16px; font-weight: 600; color: var(--accent); }
+.modal-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.close-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-light);
+  background: transparent; cursor: pointer; color: var(--text-secondary); font-size: 14px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.close-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+.modal-meta {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px;
+  background: var(--border); border-bottom: 1px solid var(--border);
+}
+.meta-item {
+  background: var(--bg-surface); padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.meta-label { font-size: 10px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; font-family: var(--font-mono); }
+.meta-val { font-size: 13px; color: var(--text-primary); font-weight: 500; font-family: var(--font-mono); }
+
+.size-table-wrap { padding: 1.25rem 1.5rem; }
+.size-table-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-mono); }
+.size-table { width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.size-table th { padding: 9px 12px; text-align: left; font-size: 10px; font-weight: 500; color: var(--text-muted); background: var(--bg-elevated); border-bottom: 1px solid var(--border); letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--font-mono); }
+.size-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+.size-table tr:last-child td { border-bottom: none; }
+.size-table tr:hover td { background: var(--bg-hover); }
+.size-chip { display: inline-block; font-family: var(--font-mono); font-weight: 700; font-size: 12px; background: var(--accent-dim); color: var(--accent); padding: 2px 10px; border-radius: 20px; border: 1px solid var(--accent-glow); }
+.pcs-chip { font-family: var(--font-mono); font-weight: 600; color: var(--green); }
+.ratio-chip { font-family: var(--font-mono); color: var(--text-muted); }
+.modal-footer {
+  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-muted); display: flex; align-items: center;
+  justify-content: space-between; font-family: var(--font-mono);
+}
+.total-chip { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.no-data { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 13px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeRow { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+tbody tr { animation: fadeRow 0.2s ease both; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">✂</div>
+      <div>
+        <div class="brand-name">FABRICFLOW ERP</div>
+        <div class="brand-ver">Cutting Module · v2.4</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="page-title">Cutting Entry History</div>
+    <div class="page-sub">Day 13 · All cutting entries · Click any cutting number to view size-wise breakdown</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="stat-label">Total Entries</div><div class="stat-val" id="s-entries">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total PCS Cut</div><div class="stat-val accent" id="s-pcs">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total Plies</div><div class="stat-val" id="s-plies">—</div></div>
+    <div class="stat-card"><div class="stat-label">Fabric Used (m)</div><div class="stat-val green" id="s-fabric">—</div></div>
+    <div class="stat-card"><div class="stat-label">Styles Active</div><div class="stat-val" id="s-styles">—</div></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-box" type="text" id="searchInput" placeholder="Search cutting no., style, color..." oninput="filterTable()" />
+    </div>
+    <div class="count-badge" id="countBadge">— records</div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cutting No</th>
+          <th>Category</th>
+          <th>Buyer</th>
+          <th>Style</th>
+          <th>Color</th>
+          <th>Plies</th>
+          <th>Total PCS</th>
+          <th>Sizes</th>
+          <th>Cut Type</th>
+          <th>Created By</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-sub" id="modalSub"></div>
+      </div>
+      <button class="close-btn" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-meta" id="modalMeta"></div>
+    <div class="size-table-wrap">
+      <div class="size-table-title">▸ Size-wise Breakdown</div>
+      <table class="size-table" id="sizeTable">
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>Ratio</th>
+            <th>Cut PCS</th>
+            <th>Created By</th>
+            <th>Updated By</th>
+            <th>Cutting No</th>
+            <th>Cutting MT</th>
+          </tr>
+        </thead>
+        <tbody id="sizeTableBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <span id="modalDate"></span>
+      <span class="total-chip" id="modalTotal"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ANONYMIZED / TEMPERED DATA ──
+// Buyer names, style codes, operator names replaced with demo data
+const rawData = [
+  {sn:1,cno:"FAB/020426/13",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:11,table:3,fabricUsed:86.25,grossAvg:0.575,ls:"02-04-2026, 15:44",le:"null",cs:"02-04-2026, 16:33",ce:"02-04-2026, 16:53",plies:30,pcs:150,cutType:"Main body",sizes:["S","M","L","XL","XXL"],by:"RAHUL SHARMA",at:"02-04-2026, 19:47"},
+  {sn:2,cno:"FAB/020426/12",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:10,table:3,fabricUsed:87.3,grossAvg:0.582,ls:"02-04-2026, 15:29",le:"null",cs:"02-04-2026, 15:31",ce:"02-04-2026, 16:29",plies:30,pcs:150,cutType:"Main body",sizes:["S","M","L","XL","XXL"],by:"RAHUL SHARMA",at:"02-04-2026, 19:32"},
+  {sn:3,cno:"FAB/020426/11",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:9,table:1,fabricUsed:90.675,grossAvg:0.585,ls:"02-04-2026, 15:05",le:"null",cs:"02-04-2026, 15:31",ce:"02-04-2026, 16:06",plies:31,pcs:155,cutType:"Main body",sizes:["M","L","XL"],by:"RAHUL SHARMA",at:"02-04-2026, 19:08"},
+  {sn:4,cno:"FAB/020426/10",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:8,table:3,fabricUsed:93.28,grossAvg:0.583,ls:"02-04-2026, 15:01",le:"null",cs:"02-04-2026, 15:30",ce:"02-04-2026, 15:54",plies:32,pcs:160,cutType:"Main body",sizes:["S","M","L","XL","XXL"],by:"RAHUL SHARMA",at:"02-04-2026, 19:04"},
+  {sn:5,cno:"FAB/020426/09",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:7,table:1,fabricUsed:55.1,grossAvg:0.58,ls:"02-04-2026, 14:17",le:"null",cs:"02-04-2026, 15:18",ce:"02-04-2026, 15:38",plies:19,pcs:95,cutType:"Main body",sizes:["M","L","XL"],by:"RAHUL SHARMA",at:"02-04-2026, 19:00"},
+  {sn:6,cno:"FAB/020426/08",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"BETA GARMENTS INDIA PVT. LTD. - MUMBAI",style:"ST-9013-B",order:"ORD-002",color:"BURGUNDY WINE",fabric:"SHERPA FABRIC-(BURGUNDY WINE)",master:"cutting_master",orderQty:2252,orderDate:"07-03-2026",delivery:"2026-04-22",layer:16,table:1,fabricUsed:7.54,grossAvg:0.58,ls:"null",le:"null",cs:"02-04-2026, 11:05",ce:"02-04-2026, 11:18",plies:1,pcs:13,cutType:"Main body",sizes:["S","M","L","XL"],by:"PRIYA MEHTA",at:"02-04-2026, 18:16"},
+  {sn:7,cno:"FAB/020426/07",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:6,table:6,fabricUsed:88.35,grossAvg:0.57,ls:"02-04-2026, 11:53",le:"null",cs:"02-04-2026, 12:29",ce:"02-04-2026, 13:18",plies:31,pcs:155,cutType:"Main body",sizes:["S","M","L","XL","XXL"],by:"PRIYA MEHTA",at:"02-04-2026, 16:56"},
+  {sn:8,cno:"FAB/020426/06",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:5,table:1,fabricUsed:89.9,grossAvg:0.58,ls:"02-04-2026, 10:50",le:"null",cs:"02-04-2026, 11:27",ce:"02-04-2026, 11:50",plies:31,pcs:155,cutType:"Main body",sizes:["M","L","XL"],by:"PRIYA MEHTA",at:"02-04-2026, 16:52"},
+  {sn:9,cno:"FAB/020426/05",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:4,table:3,fabricUsed:79.8,grossAvg:0.57,ls:"02-04-2026, 11:02",le:"null",cs:"02-04-2026, 11:16",ce:"02-04-2026, 11:40",plies:28,pcs:140,cutType:"Main body",sizes:["S","M","L","XL","XXL"],by:"PRIYA MEHTA",at:"02-04-2026, 16:49"},
+  {sn:10,cno:"FAB/020426/04",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:3,table:1,fabricUsed:84.97,grossAvg:0.586,ls:"02-04-2026, 09:23",le:"null",cs:"02-04-2026, 10:23",ce:"02-04-2026, 11:17",plies:29,pcs:145,cutType:"Main body",sizes:["M","L"],by:"ADMIN USER",at:"02-04-2026, 14:57"},
+  {sn:11,cno:"FAB/020426/03",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:2,table:6,fabricUsed:89.9,grossAvg:0.58,ls:"02-04-2026, 09:24",le:"null",cs:"02-04-2026, 10:26",ce:"02-04-2026, 11:16",plies:31,pcs:155,cutType:"Main body",sizes:["M","L","XL"],by:"ADMIN USER",at:"02-04-2026, 14:52"},
+  {sn:12,cno:"FAB/020426/02",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"ALPHA FASHION EXPORTS PVT. LTD. - DELHI",style:"ST-9012-A",order:"ORD-001",color:"MIDNIGHT NAVY",fabric:"FLEECE FABRIC-(MIDNIGHT NAVY)",master:"cutting_master",orderQty:4668,orderDate:"07-03-2026",delivery:"2026-05-21",layer:1,table:3,fabricUsed:95.04,grossAvg:0.576,ls:"02-04-2026, 09:46",le:"null",cs:"02-04-2026, 10:30",ce:"02-04-2026, 10:41",plies:33,pcs:165,cutType:"Main body",sizes:["M","L","XL"],by:"ADMIN USER",at:"02-04-2026, 14:49"},
+  {sn:13,cno:"FAB/020426/01",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"BETA GARMENTS INDIA PVT. LTD. - MUMBAI",style:"ST-9013-B",order:"ORD-002",color:"BURGUNDY WINE",fabric:"SHERPA FABRIC-(BURGUNDY WINE)",master:"cutting_master",orderQty:2252,orderDate:"07-03-2026",delivery:"2026-04-22",layer:15,table:6,fabricUsed:34.8,grossAvg:0.58,ls:"02-04-2026, 09:35",le:"null",cs:"02-04-2026, 10:35",ce:"02-04-2026, 11:11",plies:12,pcs:60,cutType:"Main body",sizes:["M","L","XL"],by:"ADMIN USER",at:"02-04-2026, 14:38"},
+  {sn:14,cno:"FAB/010426/11",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"BETA GARMENTS INDIA PVT. LTD. - MUMBAI",style:"ST-9013-B",order:"ORD-002",color:"BURGUNDY WINE",fabric:"SHERPA FABRIC-(BURGUNDY WINE)",master:"cutting_master",orderQty:2252,orderDate:"07-03-2026",delivery:"2026-04-22",layer:15,table:1,fabricUsed:15.606,grossAvg:0.578,ls:"null",le:"null",cs:"01-04-2026, 17:41",ce:"01-04-2026, 18:42",plies:27,pcs:27,cutType:"Main body",sizes:["XXL"],by:"ADMIN USER",at:"01-04-2026, 19:43"},
+  {sn:15,cno:"FAB/010426/10",cat:"In-House",unit:"Unit-A",floor:"Ground Floor (Unit-A)",line:"Cutting (GF-UA)",buyer:"BETA GARMENTS INDIA PVT. LTD. - MUMBAI",style:"ST-9013-B",order:"ORD-002",color:"BURGUNDY WINE",fabric:"SHERPA FABRIC-(BURGUNDY WINE)",master:"cutting_master",orderQty:2252,orderDate:"07-03-2026",delivery:"2026-04-22",layer:14,table:3,fabricUsed:84,grossAvg:0.56,ls:"01-04-2026, 13:31",le:"null",cs:"01-04-2026, 14:18",ce:"01-04-2026, 15:18",plies:30,pcs:150,cutType:"Main body",sizes:["S","M","L"],by:"ADMIN USER",at:"01-04-2026, 19:37"},
+];
+
+let filtered = [...rawData];
+
+function updateStats(data) {
+  document.getElementById('s-entries').textContent = data.length;
+  document.getElementById('s-pcs').textContent = data.reduce((a,r)=>a+r.pcs,0).toLocaleString();
+  document.getElementById('s-plies').textContent = data.reduce((a,r)=>a+r.plies,0).toLocaleString();
+  document.getElementById('s-fabric').textContent = data.reduce((a,r)=>a+r.fabricUsed,0).toFixed(1);
+  document.getElementById('s-styles').textContent = [...new Set(data.map(r=>r.style))].length;
+  document.getElementById('countBadge').textContent = data.length + ' records';
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="no-data">No records found</td></tr>';
+    updateStats([]);
+    return;
+  }
+  tbody.innerHTML = data.map((r, i) => `
+    <tr style="animation-delay:${i*0.03}s">
+      <td class="sn-cell">${r.sn}</td>
+      <td><span class="cut-link" onclick="openModal('${r.cno}')">${r.cno}</span></td>
+      <td><span class="badge b-inhouse">${r.cat}</span></td>
+      <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);" title="${r.buyer}">${r.buyer.split('-')[0].trim()}</td>
+      <td style="font-size:12px;font-family:var(--font-mono);color:var(--amber);">${r.style}</td>
+      <td style="font-size:12px;color:var(--text-secondary);">${r.color}</td>
+      <td style="text-align:center;font-family:var(--font-mono);">${r.plies}</td>
+      <td style="text-align:center;" class="pcs-num">${r.pcs}</td>
+      <td><div class="sizes-wrap">${r.sizes.map(s=>`<span class="sz">${s}</span>`).join('')}</div></td>
+      <td><span class="badge b-cut">${r.cutType}</span></td>
+      <td style="font-size:12px;color:var(--text-secondary);">${r.by}</td>
+      <td style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">${r.at}</td>
+    </tr>
+  `).join('');
+  updateStats(data);
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  filtered = rawData.filter(r =>
+    r.cno.toLowerCase().includes(q) ||
+    r.buyer.toLowerCase().includes(q) ||
+    r.style.toLowerCase().includes(q) ||
+    r.color.toLowerCase().includes(q) ||
+    r.by.toLowerCase().includes(q)
+  );
+  renderTable(filtered);
+}
+
+function openModal(cno) {
+  const r = rawData.find(x => x.cno === cno);
+  if (!r) return;
+  document.getElementById('modalTitle').textContent = cno;
+  document.getElementById('modalSub').textContent = `${r.buyer.split('-')[0].trim()} · ${r.style} · ${r.color}`;
+  document.getElementById('modalMeta').innerHTML = `
+    <div class="meta-item"><div class="meta-label">Order No</div><div class="meta-val">${r.order}</div></div>
+    <div class="meta-item"><div class="meta-label">Order Qty</div><div class="meta-val">${r.orderQty.toLocaleString()}</div></div>
+    <div class="meta-item"><div class="meta-label">Layer No</div><div class="meta-val">${r.layer}</div></div>
+    <div class="meta-item"><div class="meta-label">Table No</div><div class="meta-val">${r.table}</div></div>
+    <div class="meta-item"><div class="meta-label">Fabric Used (m)</div><div class="meta-val">${r.fabricUsed}</div></div>
+    <div class="meta-item"><div class="meta-label">Gross Avg</div><div class="meta-val">${r.grossAvg}</div></div>
+    <div class="meta-item"><div class="meta-label">Cutting Start</div><div class="meta-val">${r.cs}</div></div>
+    <div class="meta-item"><div class="meta-label">Cutting End</div><div class="meta-val">${r.ce}</div></div>
+    <div class="meta-item"><div class="meta-label">Cut Type</div><div class="meta-val">${r.cutType}</div></div>
+  `;
+  const pcsPer = Math.round(r.pcs / r.sizes.length);
+  document.getElementById('sizeTableBody').innerHTML = r.sizes.map(s => `
+    <tr>
+      <td><span class="size-chip">${s}</span></td>
+      <td class="ratio-chip">1</td>
+      <td class="pcs-chip">${pcsPer}</td>
+      <td style="font-size:12px;color:var(--text-secondary);">${r.by}</td>
+      <td style="font-size:12px;color:var(--text-muted);">—</td>
+      <td style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">${r.cno}</td>
+      <td style="font-size:12px;font-family:var(--font-mono);">—</td>
+    </tr>
+  `).join('');
+  document.getElementById('modalDate').textContent = `Created: ${r.at} · By: ${r.by}`;
+  document.getElementById('modalTotal').textContent = `Total PCS: ${r.pcs} · Plies: ${r.plies}`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+renderTable(rawData);
+</script>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Size Exchange In Cutting</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --border: #e0e4eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --text: #1a1f2e;
+      --muted: #6b7280;
+      --label: #374151;
+      --input-bg: #f9fafb;
+      --accent: #eff6ff;
+      --from-accent: #fdf4ff;
+      --from-border: #d8b4fe;
+      --to-accent: #f0fdf4;
+      --to-border: #86efac;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 32px 20px 60px;
+      color: var(--text);
+    }
+
+    /* ── Day badge ── */
+    .day-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin-bottom: 18px;
+    }
+    .day-badge span { font-family: 'Space Mono', monospace; font-size: 13px; }
+
+    /* ── Wrapper ── */
+    .wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ── Header card ── */
+    .header-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .header-card h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .header-card h1 span {
+      color: var(--primary);
+    }
+
+    .submit-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 26px;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+    }
+    .submit-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+
+    /* ── Filter card ── */
+    .filter-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+
+    .fields-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 760px) {
+      .fields-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .fields-grid { grid-template-columns: 1fr; }
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--label);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .field-label .req { color: #ef4444; margin-left: 2px; }
+
+    .field-select, .field-input {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .field-select:focus, .field-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
+    }
+
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--muted);
+      pointer-events: none;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── Exchange panels ── */
+    .exchange-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 640px) {
+      .exchange-grid { grid-template-columns: 1fr; }
+      .arrow-col { display: none; }
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-header .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .from-panel .panel-header {
+      background: var(--from-accent);
+      color: #7c3aed;
+      border-bottom: 1.5px solid var(--from-border);
+    }
+    .from-panel .panel-header .dot { background: #7c3aed; }
+    .to-panel .panel-header {
+      background: var(--to-accent);
+      color: #16a34a;
+      border-bottom: 1.5px solid var(--to-border);
+    }
+    .to-panel .panel-header .dot { background: #16a34a; }
+
+    .panel-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+    }
+    .stat-label {
+      font-size: 12.5px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .qty-input-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .qty-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .qty-input {
+      background: var(--input-bg);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      width: 100%;
+      text-align: right;
+    }
+    .qty-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    .qty-display {
+      background: var(--input-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--muted);
+      width: 100%;
+      text-align: right;
+    }
+
+    /* Arrow column */
+    .arrow-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 120px;
+    }
+    .arrow-circle {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.30);
+    }
+    .arrow-circle svg { width: 20px; height: 20px; color: #fff; }
+
+    /* ── Footer note ── */
+    .footer-note {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .footer-note a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--accent);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Animate in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .header-card  { animation: fadeUp 0.35s ease both; }
+    .filter-card  { animation: fadeUp 0.45s ease both; }
+    .exchange-grid { animation: fadeUp 0.55s ease both; }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Day badge -->
+  <div class="day-badge">
+    🗓 Day <span>14</span> · Garment ERP Series
+  </div>
+
+  <!-- Header -->
+  <div class="header-card">
+    <h1>Size Exchange <span>In Cutting</span></h1>
+    <button class="submit-btn">Submit</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <div class="fields-grid">
+
+      <div class="field-group">
+        <label class="field-label">Select Unit <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>Unit-2</option>
+            <option>Unit-1</option>
+            <option>Unit-3</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Select Floor <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>Ground Floor (Unit-2)</option>
+            <option>First Floor (Unit-2)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Buyer <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>BUYER NAME – MASKED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Style No <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>XXXX-XXXX</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Order No <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>XXXX</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Color <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>COLOR NAME</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Order Quantity</label>
+        <input class="field-input" type="text" value="XXXX" readonly />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Order Ex Qty</label>
+        <input class="field-input" type="text" value="XXXX" readonly />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Exchange panels -->
+  <div class="exchange-grid">
+
+    <!-- FROM -->
+    <div class="panel from-panel">
+      <div class="panel-header">
+        <div class="dot"></div>
+        From Size
+      </div>
+      <div class="panel-body">
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>XXL</option>
+            <option>XL</option>
+            <option>L</option>
+            <option>M</option>
+            <option>S</option>
+          </select>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Order Qty</span>
+          <span class="stat-value">XXX</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Ex Qty</span>
+          <span class="stat-value">XXX</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Cut Qty</span>
+          <span class="stat-value">XXX</span>
+        </div>
+        <div class="qty-input-wrap">
+          <span class="qty-label">Exchange Quantity</span>
+          <input class="qty-input" type="number" value="40" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow-col">
+      <div class="arrow-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- TO -->
+    <div class="panel to-panel">
+      <div class="panel-header">
+        <div class="dot"></div>
+        To Size
+      </div>
+      <div class="panel-body">
+        <div class="select-wrap">
+          <select class="field-select">
+            <option>S</option>
+            <option>M</option>
+            <option>L</option>
+            <option>XL</option>
+            <option>XXL</option>
+          </select>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Order Qty</span>
+          <span class="stat-value">XXX</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Ex Qty</span>
+          <span class="stat-value">XXX</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Cut Qty</span>
+          <span class="stat-value">XXX</span>
+        </div>
+        <div class="qty-input-wrap">
+          <span class="qty-label">Synced Quantity</span>
+          <div class="qty-display">40</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-note">
+    <span class="tag-pill">#Day14</span>
+    Building a Garment ERP · <a href="https://linkedin.com" target="_blank">Follow on LinkedIn</a> ·
+    <span class="tag-pill">#GarmentERP</span>
+    <span class="tag-pill">#ReactJS</span>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day 15 — Cutting Panel History | Garment ERP Series</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2332;
+    --border: #2a3045;
+    --accent: #4f8ef7;
+    --accent2: #38d9a9;
+    --warn: #f5c842;
+    --text: #e8eaf0;
+    --muted: #7a82a0;
+    --danger: #ff6b6b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* BADGE */
+  .day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin: 28px 0 0 28px;
+  }
+  .day-badge span { opacity: 0.75; font-weight: 400; }
+
+  /* HEADER */
+  .page-header {
+    padding: 20px 28px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .page-header h1 {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .page-header h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .brand-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    padding: 18px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 120px;
+  }
+  .filter-group label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .filter-group select, .filter-group input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .filter-group select:focus, .filter-group input:focus {
+    border-color: var(--accent);
+  }
+  .search-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 9px 22px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    align-self: flex-end;
+  }
+  .search-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .search-btn:active { transform: translateY(0); }
+
+  /* ORDER INFO CARD */
+  .order-info {
+    margin: 20px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px 24px;
+  }
+  .info-item { display: flex; flex-direction: column; gap: 3px; }
+  .info-item .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .info-item .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .info-item .value.accent { color: var(--accent); font-family: var(--mono); }
+  .info-item .value.warn { color: var(--warn); font-family: var(--mono); }
+
+  /* MAIN TABLE */
+  .table-wrap {
+    margin: 0 28px 28px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 900px;
+  }
+  thead tr.size-header th {
+    background: #1a2540;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-align: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  thead tr.size-header th:first-child {
+    background: var(--surface2);
+    color: var(--muted);
+    text-align: left;
+    padding-left: 16px;
+  }
+  thead tr.col-header th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 400;
+    text-align: center;
+    padding: 7px 6px;
+    border-bottom: 2px solid var(--border);
+    border-right: 1px solid #23283a;
+    letter-spacing: 0.06em;
+  }
+  thead tr.col-header th:first-child {
+    text-align: left;
+    padding-left: 16px;
+  }
+  tbody tr {
+    border-bottom: 1px solid #1e2332;
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: #1a1f2e; }
+  tbody td {
+    padding: 10px 8px;
+    text-align: center;
+    border-right: 1px solid #1e2332;
+    font-variant-numeric: tabular-nums;
+  }
+  tbody td:first-child {
+    text-align: left;
+    padding-left: 16px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    background: var(--surface);
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    border-right: 2px solid var(--border);
+  }
+  tbody td.zero { color: #3a4060; }
+  tbody td.num { color: var(--text); }
+
+  /* BALANCE ROW */
+  tbody tr.balance-row {
+    background: rgba(245, 200, 66, 0.08);
+  }
+  tbody tr.balance-row:hover { background: rgba(245, 200, 66, 0.13); }
+  tbody tr.balance-row td { color: var(--warn); font-weight: 700; font-family: var(--mono); font-size: 13px; }
+  tbody tr.balance-row td:first-child {
+    color: var(--warn);
+    background: rgba(245, 200, 66, 0.08);
+    border-right: 2px solid rgba(245, 200, 66, 0.25);
+  }
+
+  /* SIZE GROUP DIVIDERS */
+  .size-divider { border-left: 2px solid var(--border) !important; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #3a4060;
+    letter-spacing: 0.1em;
+    border-top: 1px solid var(--border);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
+  .order-info, .table-wrap { animation: fadeIn 0.4s ease both; }
+  .table-wrap { animation-delay: 0.1s; }
+</style>
+</head>
+<body>
+
+<div class="day-badge">📅 DAY 15 <span>· GARMENT ERP SERIES</span></div>
+
+<div class="page-header">
+  <div>
+    <h1>CUTTING <em>PANEL HISTORY</em></h1>
+    <div class="brand-tag">Intellisync Garment ERP · Unit-2</div>
+  </div>
+  <div class="brand-tag">Buyer: XYZ BRAND &nbsp;|&nbsp; Style: XXXX-XXXX</div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-group">
+    <label>Buyer</label>
+    <select><option>XYZ BRAND</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Style</label>
+    <select><option>XXXX-XXXX</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Our Ref</label>
+    <input type="text" value="XXXX" />
+  </div>
+  <div class="filter-group">
+    <label>Color</label>
+    <select><option>COLOR NAME</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Unit Name</label>
+    <select><option>Unit-2</option></select>
+  </div>
+  <button class="search-btn">SEARCH</button>
+</div>
+
+<!-- ORDER INFO -->
+<div class="order-info">
+  <div class="info-item">
+    <span class="label">Buyer</span>
+    <span class="value">XYZ BRAND</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Style</span>
+    <span class="value accent">XXXX-XXXX</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Our Ref</span>
+    <span class="value accent">XXXX</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Color</span>
+    <span class="value">COLOR NAME</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Order Date</span>
+    <span class="value">2026-03-07</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Delivery Date</span>
+    <span class="value">2026-05-21</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Order Qty</span>
+    <span class="value warn">4668</span>
+  </div>
+  <div class="info-item">
+    <span class="label">Order Ex Qty</span>
+    <span class="value warn">4668</span>
+  </div>
+</div>
+
+<!-- PANEL TABLE -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr class="size-header">
+        <th rowspan="2" style="min-width:120px">Size's</th>
+        <th colspan="4">L</th>
+        <th colspan="4" class="size-divider">M</th>
+        <th colspan="4" class="size-divider">S</th>
+        <th colspan="4" class="size-divider">XL</th>
+        <th colspan="4" class="size-divider">XXL</th>
+      </tr>
+      <tr class="col-header">
+        <th>Back</th><th>Sleeves</th><th>Collar</th><th>Front</th>
+        <th class="size-divider">Back</th><th>Sleeves</th><th>Collar</th><th>Front</th>
+        <th class="size-divider">Back</th><th>Sleeves</th><th>Collar</th><th>Front</th>
+        <th class="size-divider">Back</th><th>Sleeves</th><th>Collar</th><th>Front</th>
+        <th class="size-divider">Back</th><th>Sleeves</th><th>Collar</th><th>Front</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Order Qty</td>
+        <td class="num">1273</td><td class="num">1273</td><td class="num">1273</td><td class="num">1273</td>
+        <td class="num size-divider">1487</td><td class="num">1487</td><td class="num">1487</td><td class="num">1487</td>
+        <td class="num size-divider">889</td><td class="num">889</td><td class="num">889</td><td class="num">889</td>
+        <td class="num size-divider">738</td><td class="num">738</td><td class="num">738</td><td class="num">738</td>
+        <td class="num size-divider">281</td><td class="num">281</td><td class="num">281</td><td class="num">281</td>
+      </tr>
+      <tr>
+        <td>Order Ex Qty</td>
+        <td class="num">1273</td><td class="num">1273</td><td class="num">1273</td><td class="num">1273</td>
+        <td class="num size-divider">1487</td><td class="num">1487</td><td class="num">1487</td><td class="num">1487</td>
+        <td class="num size-divider">889</td><td class="num">889</td><td class="num">889</td><td class="num">889</td>
+        <td class="num size-divider">738</td><td class="num">738</td><td class="num">738</td><td class="num">738</td>
+        <td class="num size-divider">281</td><td class="num">281</td><td class="num">281</td><td class="num">281</td>
+      </tr>
+      <tr>
+        <td>Cut Qty</td>
+        <td class="num">942</td><td class="num">942</td><td class="num">942</td><td class="num">942</td>
+        <td class="num size-divider">1069</td><td class="num">1069</td><td class="num">1069</td><td class="num">1069</td>
+        <td class="num size-divider">357</td><td class="num">357</td><td class="num">357</td><td class="num">357</td>
+        <td class="num size-divider">561</td><td class="num">561</td><td class="num">561</td><td class="num">561</td>
+        <td class="num size-divider">171</td><td class="num">171</td><td class="num">171</td><td class="num">171</td>
+      </tr>
+      <tr>
+        <td>Reject</td>
+        <td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+      </tr>
+      <tr>
+        <td>Exchange Size</td>
+        <td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+        <td class="zero size-divider">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td>
+      </tr>
+      <tr class="balance-row">
+        <td>Balance To Cut</td>
+        <td>331</td><td>331</td><td>331</td><td>331</td>
+        <td class="size-divider">418</td><td>418</td><td>418</td><td>418</td>
+        <td class="size-divider">532</td><td>532</td><td>532</td><td>532</td>
+        <td class="size-divider">177</td><td>177</td><td>177</td><td>177</td>
+        <td class="size-divider">110</td><td>110</td><td>110</td><td>110</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  INTELLISYNC GARMENT ERP &nbsp;·&nbsp; DAY 15 / 30 &nbsp;·&nbsp;
+  <a href="https://github.com/abhishekmahto01/garment-industry" target="_blank">github.com/abhishekmahto01/garment-industry</a>
+</div>
+
+</body>
+</html>

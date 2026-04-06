@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Module - Garment ERP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      margin-top: 40px;
+      color: #2f3640;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+    th {
+      background: #f1f2f6;
+    }
+    .header-box {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 5px;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    .edit { background: #27ae60; }
+    .save { background: #2ecc71; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <h2>📄 Order Process Plan (Masked)</h2>
+  <div class="card">
+    <div class="header-box">
+      <div>Buyer: *** MASKED CLIENT ***</div>
+      <div>Style: ****</div>
+      <div>Colour: BLACK</div>
+    </div>
+
+    <table>
+      <tr>
+        <th>Process</th>
+        <th>Section</th>
+        <th>Source</th>
+        <th>QMS</th>
+        <th>Size Tracking</th>
+        <th>Seq</th>
+        <th>Action</th>
+      </tr>
+      <tr><td>Cutting</td><td>Entry</td><td>In House</td><td>No</td><td>Yes</td><td>1</td><td><button class="btn edit">Edit</button></td></tr>
+      <tr><td>Cutting</td><td>Ready</td><td>In House</td><td>No</td><td>Yes</td><td>2</td><td><button class="btn edit">Edit</button></td></tr>
+      <tr><td>Stitching</td><td>Input</td><td>In House</td><td>No</td><td>Yes</td><td>3</td><td><button class="btn edit">Edit</button></td></tr>
+      <tr><td>Stitching</td><td>Output</td><td>In House</td><td>Yes</td><td>Yes</td><td>4</td><td><button class="btn edit">Edit</button></td></tr>
+      <tr><td>Finishing</td><td>Final</td><td>In House</td><td>Yes</td><td>Yes</td><td>5</td><td><button class="btn edit">Edit</button></td></tr>
+      <tr><td>Packing</td><td>Output</td><td>In House</td><td>No</td><td>Yes</td><td>6</td><td><button class="btn edit">Edit</button></td></tr>
+    </table>
+  </div>
+
+  <h2>📦 Unit Wise Allocation (Masked)</h2>
+  <div class="card">
+    <div class="header-box">
+      <div>Buyer: *** MASKED CLIENT ***</div>
+      <div>Style: ****</div>
+      <div>Order Ref: ####</div>
+    </div>
+
+    <table>
+      <tr>
+        <th>Unit</th>
+        <th>S</th>
+        <th>M</th>
+        <th>L</th>
+        <th>XL</th>
+        <th>XXL</th>
+        <th>Total</th>
+      </tr>
+      <tr>
+        <td>Total Qty</td>
+        <td>***</td><td>***</td><td>***</td><td>***</td><td>***</td>
+        <td>****</td>
+      </tr>
+      <tr>
+        <td>Unit-1</td>
+        <td>***</td><td>***</td><td>***</td><td>***</td><td>***</td>
+        <td>****</td>
+      </tr>
+      <tr>
+        <td>Balance</td>
+        <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+        <td>0</td>
+      </tr>
+    </table>
+
+    <button class="btn save">Save</button>
+  </div>
+
+</body>
+</html>

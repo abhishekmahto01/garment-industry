@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bundling Module — Garment Industry ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;
+  --surface:#181c27;
+  --surface2:#1e2333;
+  --border:#2a3148;
+  --border2:#3a4460;
+  --text:#e8ecf4;
+  --muted:#7a8aaa;
+  --accent:#4f8cff;
+  --accent2:#38c98a;
+  --warn:#f5a623;
+  --danger:#e05252;
+  --pill:#232b42;
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+  --radius:10px;
+  --radius-lg:16px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.top-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:1rem;height:52px;position:sticky;top:0;z-index:100}
+.logo{font-size:13px;font-weight:600;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+.logo span{color:var(--text)}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;margin-left:auto}
+.breadcrumb b{color:var(--text)}
+
+/* STEPS */
+.steps-bar{padding:1.2rem 2rem;display:flex;gap:0;align-items:center;background:var(--surface);border-bottom:1px solid var(--border)}
+.step{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 14px;border-radius:20px;transition:all .2s;font-size:13px;font-weight:500;color:var(--muted)}
+.step.active{background:rgba(79,140,255,.12);color:var(--accent)}
+.step.done{color:var(--accent2)}
+.step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.step.done .step-num{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.step-arrow{color:var(--border2);margin:0 4px;font-size:14px}
+
+/* SCREEN WRAPPER */
+.screen{display:none;padding:2rem;animation:fadeIn .25s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:16px;font-weight:600}
+.card-body{padding:1.5rem}
+
+/* FILTERS */
+.filter-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:12px;margin-bottom:1.5rem}
+.filter-group{display:flex;flex-direction:column;gap:5px}
+.filter-label{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.filter-input,.filter-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;color:var(--text);font-family:var(--font);font-size:13px;width:100%;transition:border .2s}
+.filter-input:focus,.filter-select:focus{outline:none;border-color:var(--accent)}
+.filter-select{cursor:pointer}
+.filter-select option{background:var(--surface2)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;font-weight:500;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+tbody tr{transition:background .15s;cursor:pointer}
+tbody tr:hover{background:rgba(79,140,255,.05)}
+tbody tr.selected{background:rgba(79,140,255,.1);border-left:3px solid var(--accent)}
+.radio-col{width:40px;text-align:center}
+input[type=radio]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:rgba(56,201,138,.15);color:var(--accent2)}
+.badge-blue{background:rgba(79,140,255,.15);color:var(--accent)}
+.badge-amber{background:rgba(245,166,35,.15);color:var(--warn)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:var(--radius);border:none;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#3a7aee}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--pill)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{opacity:.85}
+.btn-success{background:var(--accent2);color:#fff}
+.btn-success:hover{opacity:.9}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-lg{padding:11px 28px;font-size:15px;width:100%}
+
+/* MODAL BACKDROP */
+.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:600px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-size:18px;font-weight:600}
+.modal-body{padding:1.5rem}
+.modal-foot{padding:1rem 1.5rem;border-top:1px solid var(--border)}
+.close-btn{width:32px;height:32px;border-radius:8px;background:var(--danger);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:14px;transition:border .2s}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.form-input[readonly]{opacity:.7;cursor:not-allowed}
+.tag-input-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:44px;cursor:pointer;transition:border .2s}
+.tag-input-wrap:focus-within{border-color:var(--accent)}
+.tag{background:rgba(79,140,255,.15);color:var(--accent);border-radius:6px;padding:3px 10px;font-size:13px;display:flex;align-items:center;gap:5px}
+.tag-x{cursor:pointer;opacity:.7;font-size:11px}
+.tag-x:hover{opacity:1}
+.suggestion-box{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 14px;font-size:14px;color:var(--accent2);min-height:48px;font-weight:500}
+.size-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.size-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 20px;text-align:center}
+.size-card .sz{font-size:18px;font-weight:600;color:var(--accent)}
+.size-card .qty{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* MASTER GUIDE */
+.guide-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.stat-card .s-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-card .s-val{font-size:22px;font-weight:600}
+
+/* BUNDLE LIST */
+.bundle-code-link{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:500;text-decoration:underline;cursor:pointer}
+.bundle-code-link:hover{color:#7aaeff}
+.piece-range{color:var(--muted);font-family:var(--mono);font-size:12px}
+
+/* PRINT PREVIEW */
+.print-layout{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;min-height:calc(100vh - 200px)}
+.print-settings{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;height:fit-content;position:sticky;top:80px}
+.print-settings h3{font-size:15px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.checkbox-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
+.cb-item{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.cb-item input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+.setting-row{margin-bottom:12px}
+.setting-row label{font-size:12px;color:var(--muted);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.setting-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;color:var(--text);font-family:var(--font);font-size:13px;width:100%;cursor:pointer}
+.setting-select option{background:var(--surface2)}
+
+.preview-panel{display:flex;flex-direction:column;gap:14px}
+.bundle-print-card{background:#fff;border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #dde}
+.bundle-print-card.bordered{border:1.5px solid #b0b8d4}
+.bpc-fields{flex:1}
+.bpc-field{display:flex;gap:6px;font-size:12px;margin-bottom:3px;color:#1a1a2e}
+.bpc-field strong{color:#3a3a5c;min-width:80px}
+.bpc-qr{flex-shrink:0}
+.qr-box{width:72px;height:72px;border:1px solid #ccc;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f8f8f8}
+
+/* TOPBAR ACTIONS */
+.action-row{display:flex;gap:10px;align-items:center}
+
+/* DATE PILL */
+.date-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer}
+.date-select option{background:var(--surface2)}
+
+/* SELECT dropdown popup */
+.select-popup{position:absolute;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);width:200px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden}
+.select-popup div{padding:9px 14px;font-size:13px;cursor:pointer;transition:background .15s}
+.select-popup div:hover{background:rgba(79,140,255,.1)}
+.select-popup div.sel{color:var(--accent);font-weight:500}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:3rem;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* NAV */
+.nav-actions{display:flex;gap:10px;margin-left:auto}
+
+/* RATIO select */
+.ratio-select-area{position:relative}
+.ratio-options{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.ratio-pill{padding:5px 14px;border-radius:20px;border:1px solid var(--border2);font-size:12px;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.ratio-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* SEARCH */
+.search-wrap{position:relative;width:240px}
+.search-wrap input{width:100%;padding:7px 12px 7px 32px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px}
+.search-wrap input:focus{outline:none;border-color:var(--accent)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
+
+/* PRINT BAR */
+.print-top-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.print-top-bar h2{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+
+@media print{
+  .no-print{display:none!important}
+  .print-layout{grid-template-columns:1fr}
+  .print-settings{display:none}
+  body{background:#fff;color:#000}
+  .bundle-print-card{break-inside:avoid;margin-bottom:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar no-print">
+  <div class="logo">GARMENT<span>ERP</span></div>
+  <div class="breadcrumb">
+    Production &rsaquo; <b>Bundling Module</b>
+  </div>
+</div>
+
+<!-- STEPS BAR -->
+<div class="steps-bar no-print" id="stepsBar">
+  <div class="step active" id="step1btn" onclick="goStep(1)">
+    <div class="step-num">1</div> Select Order
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="step" id="step2btn" onclick="goStep(2)">
+    <div class="step-num">2</div> Bundle Form
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="step" id="step3btn" onclick="goStep(3)">
+    <div class="step-num">3</div> Master Bundle Guide
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="step" id="step4btn" onclick="goStep(4)">
+    <div class="step-num">4</div> Bundle List
+  </div>
+  <span class="step-arrow">›</span>
+  <div class="step" id="step5btn" onclick="goStep(5)">
+    <div class="step-num">5</div> Print Cards
+  </div>
+</div>
+
+<!-- ==================== SCREEN 1: SELECT ORDER ==================== -->
+<div class="screen active" id="screen1">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Select Order Details</span>
+      <div class="action-row">
+        <button class="btn btn-secondary btn-sm" onclick="cancelOrder()">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="proceedBtn" onclick="proceedToBundle()" disabled>Proceed →</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Filters -->
+      <div class="filter-row">
+        <div class="filter-group">
+          <span class="filter-label">Select Date Range</span>
+          <input class="filter-input" type="date" id="filterDate" value="2026-04-08" onchange="applyFilters()"/>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Unit (Auto Fill)</span>
+          <select class="filter-select" id="filterUnit" onchange="applyFilters()">
+            <option value="">All Units</option>
+            <option value="Unit-2" selected>Unit-2</option>
+            <option value="Unit-1">Unit-1</option>
+            <option value="Unit-3">Unit-3</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Buyer</span>
+          <select class="filter-select" id="filterBuyer" onchange="applyFilters()">
+            <option value="">All Buyers</option>
+            <option value="BUYER ALPHA" selected>BUYER ALPHA</option>
+            <option value="BUYER BETA">BUYER BETA</option>
+            <option value="BUYER GAMMA">BUYER GAMMA</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Style</span>
+          <select class="filter-select" id="filterStyle" onchange="applyFilters()">
+            <option value="">All Styles</option>
+            <option value="STY-A001" selected>STY-A001</option>
+            <option value="STY-B002">STY-B002</option>
+            <option value="STY-C003">STY-C003</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Our Ref</span>
+          <select class="filter-select" id="filterRef" onchange="applyFilters()">
+            <option value="">All Refs</option>
+            <option value="REF-001" selected>REF-001</option>
+            <option value="REF-002">REF-002</option>
+            <option value="REF-003">REF-003</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Colour</span>
+          <select class="filter-select" id="filterColour" onchange="applyFilters()">
+            <option value="">All Colours</option>
+            <option value="COLOR-X" selected>COLOR-X</option>
+            <option value="COLOR-Y">COLOR-Y</option>
+            <option value="COLOR-Z">COLOR-Z</option>
+          </select>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="tbl-wrap">
+        <table id="orderTable">
+          <thead>
+            <tr>
+              <th class="radio-col">Select</th>
+              <th>Buyer</th>
+              <th>Style No</th>
+              <th>Our Ref</th>
+              <th>Color</th>
+              <th>Layer No</th>
+              <th>Order QTY</th>
+              <th>Order Ex QTY</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="orderTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 2: BUNDLE FORM (MODAL STYLE) ==================== -->
+<div class="screen" id="screen2">
+  <div style="max-width:640px;margin:0 auto">
+    <div class="card">
+      <div class="modal-head">
+        <span class="modal-title">Bundle Form</span>
+        <button class="close-btn" onclick="goStep(1)">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Layer No</label>
+            <input class="form-input" id="bf-layer" readonly/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Select Size</label>
+            <div class="tag-input-wrap" id="sizeTagWrap" onclick="toggleSizeDropdown()">
+              <span id="sizeTags"></span>
+              <span style="color:var(--muted);font-size:13px" id="sizePlaceholder">Select sizes...</span>
+            </div>
+            <div id="sizeDropdown" style="display:none;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);margin-top:4px;overflow:hidden">
+              <div style="padding:8px;display:flex;flex-wrap:wrap;gap:6px" id="sizeOptions"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cut Qty</label>
+            <input class="form-input" id="bf-cutqty" readonly/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bundle Qty</label>
+            <input class="form-input" id="bf-bundleqty" readonly/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ratio</label>
+            <div class="ratio-options" id="ratioOptions"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qty of Individual Bundle</label>
+            <input class="form-input" id="bf-indqty" type="number" min="1" value="5" oninput="calcSuggestion()"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Suggestion</label>
+            <div class="suggestion-box" id="bf-suggestion">Select sizes to calculate...</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Balance to Bundle</label>
+            <input class="form-input" id="bf-balance" type="number" placeholder="Enter balance qty"/>
+          </div>
+        </div>
+        <!-- Size preview cards -->
+        <div class="size-preview" id="sizePreview"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-success btn-lg" onclick="submitBundle()">✓ Submit & Generate Bundles</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 3: MASTER BUNDLE GUIDE ==================== -->
+<div class="screen" id="screen3">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Master Bundle Guide</span>
+      <div class="action-row">
+        <select class="date-select" id="guideDate">
+          <option value="today">Today (8 Apr)</option>
+          <option value="yesterday">Yesterday (7 Apr)</option>
+          <option value="week">This Week</option>
+        </select>
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" placeholder="Search buyer / style..." oninput="filterGuide(this.value)"/>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="goStep(2)">+ New Bundle</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="guide-stat-row" id="guideStats"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" onclick="toggleAllGuide(this)"/></th>
+              <th>Buyer</th>
+              <th>Style No</th>
+              <th>Our Ref</th>
+              <th>Color</th>
+              <th>Layer No</th>
+              <th>Quantity</th>
+              <th>Bundles</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="guideTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 4: BUNDLE LIST ==================== -->
+<div class="screen" id="screen4">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title" id="bundleListTitle">Bundle List</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="bundleListMeta"></div>
+      </div>
+      <div class="action-row">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" placeholder="Search bundle code..." oninput="filterBundleList(this.value)"/>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="goStep(3)">← Back</button>
+        <button class="btn btn-primary btn-sm" onclick="printSelected()">🖨 Print Selected</button>
+      </div>
+    </div>
+    <!-- Info bar -->
+    <div style="padding:.75rem 1.5rem;background:var(--surface2);border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);gap:12px" id="bundleInfoBar"></div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAllBundles" onclick="toggleAllBundles(this)"/></th>
+              <th>Bundle Code</th>
+              <th>Buyer</th>
+              <th>Style No</th>
+              <th>Our Ref</th>
+              <th>Color</th>
+              <th>Layer No</th>
+              <th>Size</th>
+              <th>Qty</th>
+              <th>Piece Range</th>
+            </tr>
+          </thead>
+          <tbody id="bundleListTbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-secondary btn-sm" onclick="goStep(3)">Close</button>
+      <button class="btn btn-primary btn-sm" onclick="goStep(5)">🖨 Print All Cards</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN 5: PRINT CARDS ==================== -->
+<div class="screen" id="screen5">
+  <div class="print-top-bar no-print">
+    <h2>🖨 Print Bundle Card</h2>
+    <div class="action-row">
+      <button class="btn btn-secondary btn-sm" onclick="goStep(4)">← Back</button>
+      <button class="btn btn-primary" id="printCountBtn" onclick="window.print()">🖨 Print (0 Cards)</button>
+    </div>
+  </div>
+  <div style="padding:1.5rem">
+    <div class="print-layout">
+      <!-- Settings -->
+      <div class="print-settings no-print">
+        <h3>🔧 Bundle Card Display Settings</h3>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Visible Fields:</div>
+        <div class="checkbox-row">
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="buyer"/> Buyer Name</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="ourref"/> Ourref</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="style"/> Style</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="color"/> Color</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="bundleCode"/> Bundle Code</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="size"/> Size</label>
+          <label class="cb-item"><input type="checkbox" onchange="renderPrintCards()" data-field="layerNo"/> Layer No</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="qty"/> Quantity</label>
+          <label class="cb-item"><input type="checkbox" checked onchange="renderPrintCards()" data-field="pcsRange"/> Pcs Range</label>
+        </div>
+        <div class="setting-row">
+          <label>Font Size:</label>
+          <select class="setting-select" id="fontSizeSetting" onchange="renderPrintCards()">
+            <option value="10">Extra Small</option>
+            <option value="12" selected>Small</option>
+            <option value="14">Medium</option>
+            <option value="16">Large</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Layout:</label>
+          <select class="setting-select" id="layoutSetting" onchange="renderPrintCards()">
+            <option value="horizontal" selected>Horizontal</option>
+            <option value="vertical">Vertical</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>QR Code Position:</label>
+          <select class="setting-select" id="qrPosSetting" onchange="renderPrintCards()">
+            <option value="right" selected>Right</option>
+            <option value="left">Left</option>
+            <option value="none">Hide QR</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Theme:</label>
+          <select class="setting-select" id="themeSetting" onchange="renderPrintCards()">
+            <option value="bordered" selected>Bordered</option>
+            <option value="minimal">Minimal</option>
+            <option value="compact">Compact</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="saveSettings()">💾 Save Settings</button>
+      </div>
+      <!-- Preview -->
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px" class="no-print">Preview</div>
+        <div id="printCardsPreview"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const ORDERS = [
+  {id:1,buyer:'BUYER ALPHA PVT. LTD. -CITY A',style:'STY-A001',ref:'REF-001',color:'COLOR-X',layer:1,orderQty:12670,orderExQty:12800,unit:'Unit-2',date:'2026-04-08',sizes:{XS:0,S:180,M:340,L:300,XL:220,XXL:80},cutQty:1120,status:'Cut Done'},
+  {id:2,buyer:'BUYER BETA PVT. LTD. -CITY B',style:'STY-B002',ref:'REF-002',color:'COLOR-Y',layer:10,orderQty:9800,orderExQty:10000,unit:'Unit-2',date:'2026-04-08',sizes:{S:200,M:400,L:350,XL:160},cutQty:1110,status:'Cut Done'},
+  {id:3,buyer:'BUYER GAMMA LTD. -CITY C',style:'STY-C003',ref:'REF-003',color:'COLOR-Z',layer:3,orderQty:5500,orderExQty:5600,unit:'Unit-1',date:'2026-04-08',sizes:{S:120,M:240,L:200,XL:80},cutQty:640,status:'Cut Done'},
+];
+
+let selectedOrder = null;
+let generatedBundles = [];  // all bundles across sessions
+let selectedSizes = [];
+let currentRatio = 1;
+
+// ============================================================
+// STEP NAVIGATION
+// ============================================================
+function goStep(n) {
+  for(let i=1;i<=5;i++){
+    document.getElementById('screen'+i).classList.remove('active');
+    const sb = document.getElementById('step'+i+'btn');
+    sb.classList.remove('active','done');
+    if(i<n) sb.classList.add('done');
+  }
+  document.getElementById('screen'+n).classList.add('active');
+  document.getElementById('step'+n+'btn').classList.add('active');
+
+  if(n===3) renderGuide();
+  if(n===4) renderBundleList();
+  if(n===5) renderPrintCards();
+}
+
+// ============================================================
+// SCREEN 1: ORDER SELECTION
+// ============================================================
+let filteredOrders = [...ORDERS];
+
+function applyFilters(){
+  const buyer = document.getElementById('filterBuyer').value;
+  const style = document.getElementById('filterStyle').value;
+  const ref = document.getElementById('filterRef').value;
+  const colour = document.getElementById('filterColour').value;
+  filteredOrders = ORDERS.filter(o=>{
+    if(buyer && !o.buyer.includes(buyer)) return false;
+    if(style && o.style!==style) return false;
+    if(ref && o.ref!==ref) return false;
+    if(colour && o.color!==colour) return false;
+    return true;
+  });
+  renderOrderTable();
+}
+
+function renderOrderTable(){
+  const tb = document.getElementById('orderTbody');
+  tb.innerHTML = '';
+  if(!filteredOrders.length){
+    tb.innerHTML=`<tr><td colspan="9" class="empty-state"><div class="empty-icon">📦</div><div>No orders found</div></td></tr>`;
+    return;
+  }
+  filteredOrders.forEach(o=>{
+    const tr = document.createElement('tr');
+    if(selectedOrder && selectedOrder.id===o.id) tr.classList.add('selected');
+    tr.innerHTML=`
+      <td class="radio-col"><input type="radio" name="orderSel" ${selectedOrder&&selectedOrder.id===o.id?'checked':''} onchange="selectOrder(${o.id})"/></td>
+      <td>${o.buyer}</td>
+      <td style="font-family:var(--mono);font-size:12px">${o.style}</td>
+      <td>${o.ref}</td>
+      <td>${o.color}</td>
+      <td>${o.layer}</td>
+      <td>${o.orderQty.toLocaleString()}</td>
+      <td>${o.orderExQty.toLocaleString()}</td>
+      <td><span class="badge badge-green">${o.status}</span></td>
+    `;
+    tr.onclick=()=>{ selectOrder(o.id); };
+    tb.appendChild(tr);
+  });
+}
+
+function selectOrder(id){
+  selectedOrder = ORDERS.find(o=>o.id===id);
+  document.getElementById('proceedBtn').disabled = false;
+  renderOrderTable();
+}
+
+function cancelOrder(){
+  selectedOrder = null;
+  document.getElementById('proceedBtn').disabled = true;
+  renderOrderTable();
+}
+
+function proceedToBundle(){
+  if(!selectedOrder) return;
+  openBundleForm();
+}
+
+// ============================================================
+// SCREEN 2: BUNDLE FORM
+// ============================================================
+function openBundleForm(){
+  goStep(2);
+  const o = selectedOrder;
+  document.getElementById('bf-layer').value = o.layer;
+  document.getElementById('bf-cutqty').value = o.cutQty;
+  document.getElementById('bf-bundleqty').value = o.cutQty;
+
+  // Size options
+  selectedSizes = [];
+  const opts = document.getElementById('sizeOptions');
+  opts.innerHTML='';
+  Object.keys(o.sizes).forEach(sz=>{
+    if(o.sizes[sz]===0) return;
+    const btn = document.createElement('button');
+    btn.textContent = sz;
+    btn.className='ratio-pill';
+    btn.onclick=()=>toggleSize(sz,btn);
+    opts.appendChild(btn);
+  });
+
+  // Ratio
+  const ro = document.getElementById('ratioOptions');
+  ro.innerHTML='';
+  [1,2,3,4,5].forEach(r=>{
+    const btn=document.createElement('button');
+    btn.textContent='1:'+r;
+    btn.className='ratio-pill'+(r===1?' active':'');
+    btn.onclick=()=>{
+      document.querySelectorAll('#ratioOptions .ratio-pill').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRatio=r;
+      calcSuggestion();
+    };
+    ro.appendChild(btn);
+  });
+
+  updateSizeTags();
+  calcSuggestion();
+}
+
+function toggleSizeDropdown(){
+  const d=document.getElementById('sizeDropdown');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+
+function toggleSize(sz, btn){
+  if(selectedSizes.includes(sz)){
+    selectedSizes=selectedSizes.filter(s=>s!==sz);
+    btn.classList.remove('active');
+  } else {
+    selectedSizes.push(sz);
+    btn.classList.add('active');
+  }
+  updateSizeTags();
+  calcSuggestion();
+}
+
+function updateSizeTags(){
+  const wrap=document.getElementById('sizeTags');
+  const ph=document.getElementById('sizePlaceholder');
+  wrap.innerHTML='';
+  ph.style.display=selectedSizes.length?'none':'inline';
+  selectedSizes.forEach(sz=>{
+    const span=document.createElement('span');
+    span.className='tag';
+    span.innerHTML=`${sz} <span class="tag-x" onclick="event.stopPropagation();removeSize('${sz}')">✕</span>`;
+    wrap.appendChild(span);
+  });
+  renderSizePreview();
+}
+
+function removeSize(sz){
+  selectedSizes=selectedSizes.filter(s=>s!==sz);
+  document.querySelectorAll('#sizeOptions .ratio-pill').forEach(b=>{
+    if(b.textContent===sz) b.classList.remove('active');
+  });
+  updateSizeTags();
+  calcSuggestion();
+}
+
+function renderSizePreview(){
+  const o=selectedOrder;
+  const p=document.getElementById('sizePreview');
+  p.innerHTML='';
+  selectedSizes.forEach(sz=>{
+    const qty=o.sizes[sz]||0;
+    const d=document.createElement('div');
+    d.className='size-card';
+    d.innerHTML=`<div class="sz">${sz}</div><div class="qty">${qty}</div>`;
+    p.appendChild(d);
+  });
+}
+
+function calcSuggestion(){
+  const o=selectedOrder;
+  if(!selectedSizes.length){
+    document.getElementById('bf-suggestion').textContent='Select sizes to calculate...';
+    return;
+  }
+  const totalCut = selectedSizes.reduce((s,sz)=>s+(o.sizes[sz]||0),0);
+  const indQty = parseInt(document.getElementById('bf-indqty').value)||5;
+  const bundles = Math.floor(totalCut/indQty);
+  const balance = totalCut % indQty;
+  document.getElementById('bf-cutqty').value = totalCut;
+  document.getElementById('bf-bundleqty').value = totalCut;
+  document.getElementById('bf-suggestion').textContent = `No Of Bundle: ${bundles}   Total Qty: ${totalCut}`;
+  document.getElementById('bf-balance').value = balance > 0 ? balance : '';
+}
+
+function submitBundle(){
+  const o = selectedOrder;
+  if(!selectedSizes.length){ alert('Please select at least one size.'); return; }
+  const indQty = parseInt(document.getElementById('bf-indqty').value)||5;
+
+  // Generate bundles for each size
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0');
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const yy = String(today.getFullYear()).slice(2);
+
+  let existingForOrder = generatedBundles.filter(b=>b.orderId===o.id && b.layerNo===o.layer);
+  let codeIdx = existingForOrder.length + 1;
+
+  let pieceStart = generatedBundles.filter(b=>b.orderId===o.id).reduce((s,b)=>s+b.qty,0)+1;
+
+  selectedSizes.forEach(sz=>{
+    const total = o.sizes[sz]||0;
+    let remaining = total;
+    while(remaining > 0){
+      const qty = Math.min(indQty, remaining);
+      const code = `BDL/${dd}${mm}${yy}/${codeIdx}`;
+      generatedBundles.push({
+        id: generatedBundles.length+1,
+        orderId: o.id,
+        code,
+        buyer: o.buyer,
+        style: o.style,
+        ref: o.ref,
+        color: o.color,
+        layerNo: o.layer,
+        size: sz,
+        qty,
+        pieceFrom: pieceStart,
+        pieceTo: pieceStart + qty - 1,
+        selected: false,
+      });
+      pieceStart += qty;
+      remaining -= qty;
+      codeIdx++;
+    }
+  });
+
+  alert(`✓ ${generatedBundles.filter(b=>b.orderId===o.id).length} bundles generated successfully!`);
+  goStep(3);
+}
+
+// ============================================================
+// SCREEN 3: MASTER GUIDE
+// ============================================================
+function renderGuide(){
+  // Stats
+  const total = generatedBundles.length;
+  const totalQty = generatedBundles.reduce((s,b)=>s+b.qty,0);
+  const uniqueOrders = [...new Set(generatedBundles.map(b=>b.orderId))].length;
+  const uniqueSizes = [...new Set(generatedBundles.map(b=>b.size))].length;
+  document.getElementById('guideStats').innerHTML=`
+    <div class="stat-card"><div class="s-label">Total Bundles</div><div class="s-val" style="color:var(--accent)">${total}</div></div>
+    <div class="stat-card"><div class="s-label">Total Qty</div><div class="s-val" style="color:var(--accent2)">${totalQty.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="s-label">Active Orders</div><div class="s-val" style="color:var(--warn)">${uniqueOrders}</div></div>
+    <div class="stat-card"><div class="s-label">Size Variants</div><div class="s-val" style="color:var(--text)">${uniqueSizes}</div></div>
+  `;
+
+  // Group bundles by orderId
+  const grouped = {};
+  generatedBundles.forEach(b=>{
+    if(!grouped[b.orderId]) grouped[b.orderId]={...ORDERS.find(o=>o.id===b.orderId), bundles:[],totalQty:0};
+    grouped[b.orderId].bundles.push(b);
+    grouped[b.orderId].totalQty+=b.qty;
+  });
+
+  const tb = document.getElementById('guideTbody');
+  tb.innerHTML='';
+  if(!Object.keys(grouped).length){
+    tb.innerHTML=`<tr><td colspan="9" class="empty-state"><div class="empty-icon">📦</div><div>No bundles generated yet. Click "New Bundle" to start.</div></td></tr>`;
+    return;
+  }
+  Object.values(grouped).forEach(g=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><input type="checkbox" class="guide-cb"/></td>
+      <td>${g.buyer}</td>
+      <td style="font-family:var(--mono);font-size:12px">${g.style}</td>
+      <td>${g.ref}</td>
+      <td>${g.color}</td>
+      <td>${g.layer}</td>
+      <td>${g.totalQty.toLocaleString()}</td>
+      <td><span class="badge badge-blue">${g.bundles.length}</span></td>
+      <td><button class="btn btn-secondary btn-sm" onclick="viewBundleList(${g.id})">VIEW</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function filterGuide(q){
+  const rows = document.querySelectorAll('#guideTbody tr');
+  rows.forEach(r=>{
+    r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+
+function toggleAllGuide(cb){
+  document.querySelectorAll('.guide-cb').forEach(c=>c.checked=cb.checked);
+}
+
+function viewBundleList(orderId){
+  const o = ORDERS.find(x=>x.id===orderId);
+  selectedOrder = o;
+  goStep(4);
+}
+
+// ============================================================
+// SCREEN 4: BUNDLE LIST
+// ============================================================
+function renderBundleList(){
+  const o = selectedOrder;
+  if(!o){ document.getElementById('bundleListTbody').innerHTML=''; return; }
+
+  document.getElementById('bundleListTitle').textContent = `Bundle List — ${o.style} / ${o.color}`;
+  document.getElementById('bundleListMeta').textContent = `${o.buyer} | Ref: ${o.ref} | Layer: ${o.layer}`;
+
+  // Info bar
+  const bundles = generatedBundles.filter(b=>b.orderId===o.id);
+  const totalQty = bundles.reduce((s,b)=>s+b.qty,0);
+  const sizes = [...new Set(bundles.map(b=>b.size))];
+  document.getElementById('bundleInfoBar').innerHTML=`
+    <div><div class="filter-label">Buyer Name</div><div style="font-size:13px;margin-top:4px">${o.buyer}</div></div>
+    <div><div class="filter-label">Style</div><div style="font-size:13px;font-family:var(--mono);margin-top:4px">${o.style}</div></div>
+    <div><div class="filter-label">Color</div><div style="font-size:13px;margin-top:4px">${o.color}</div></div>
+    <div><div class="filter-label">Our Ref</div><div style="font-size:13px;margin-top:4px">${o.ref}</div></div>
+    <div><div class="filter-label">Layer No</div><div style="font-size:13px;margin-top:4px">${o.layer}</div></div>
+  `;
+
+  const tb = document.getElementById('bundleListTbody');
+  tb.innerHTML='';
+  if(!bundles.length){
+    tb.innerHTML=`<tr><td colspan="10" class="empty-state"><div>No bundles for this order yet.</div></td></tr>`;
+    return;
+  }
+  bundles.forEach(b=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><input type="checkbox" class="bundle-cb" data-id="${b.id}" onchange="updatePrintCount()"/></td>
+      <td><span class="bundle-code-link" onclick="highlightBundle('${b.code}')">${b.code}</span></td>
+      <td style="font-size:12px">${b.buyer}</td>
+      <td style="font-family:var(--mono);font-size:12px">${b.style}</td>
+      <td>${b.ref}</td>
+      <td>${b.color}</td>
+      <td>${b.layerNo}</td>
+      <td><span class="badge badge-blue">${b.size}</span></td>
+      <td>${b.qty}</td>
+      <td class="piece-range">${b.pieceFrom} – ${b.pieceTo}</td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  document.getElementById('printCountBtn') && updatePrintCount();
+}
+
+function filterBundleList(q){
+  document.querySelectorAll('#bundleListTbody tr').forEach(r=>{
+    r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+
+function toggleAllBundles(cb){
+  document.querySelectorAll('.bundle-cb').forEach(c=>c.checked=cb.checked);
+  updatePrintCount();
+}
+
+function updatePrintCount(){
+  const count = document.querySelectorAll('.bundle-cb:checked').length;
+  const btn = document.getElementById('printCountBtn');
+  if(btn) btn.textContent=`🖨 Print (${count||generatedBundles.filter(b=>b.orderId===selectedOrder?.id).length} Cards)`;
+}
+
+function printSelected(){
+  const checked = [...document.querySelectorAll('.bundle-cb:checked')].map(c=>parseInt(c.dataset.id));
+  if(!checked.length){
+    alert('Please select bundles to print, or use "Print All Cards".');
+    return;
+  }
+  goStep(5);
+}
+
+// ============================================================
+// SCREEN 5: PRINT CARDS
+// ============================================================
+function renderPrintCards(){
+  const o = selectedOrder;
+  const bundles = o ? generatedBundles.filter(b=>b.orderId===o.id) : generatedBundles;
+  if(!bundles.length){ document.getElementById('printCardsPreview').innerHTML='<div class="empty-state"><div class="empty-icon">🖨</div><div>No bundles to print</div></div>'; return; }
+
+  const fields = {};
+  document.querySelectorAll('[data-field]').forEach(cb=>fields[cb.dataset.field]=cb.checked);
+  const fs = document.getElementById('fontSizeSetting')?.value||'12';
+  const layout = document.getElementById('layoutSetting')?.value||'horizontal';
+  const qrPos = document.getElementById('qrPosSetting')?.value||'right';
+  const theme = document.getElementById('themeSetting')?.value||'bordered';
+
+  const preview = document.getElementById('printCardsPreview');
+  preview.innerHTML='';
+
+  bundles.forEach((b,idx)=>{
+    const card = document.createElement('div');
+    card.className=`bundle-print-card ${theme}`;
+    card.style.marginBottom='14px';
+    card.style.fontSize=fs+'px';
+    if(layout==='vertical') card.style.flexDirection='column';
+    if(qrPos==='left') card.style.flexDirection='row-reverse';
+    if(qrPos==='none') card.style.justifyContent='flex-start';
+
+    const rows=[];
+    if(fields.buyer) rows.push(`<div class="bpc-field"><strong>Buyer:</strong>${b.buyer}</div>`);
+    if(fields.ourref) rows.push(`<div class="bpc-field"><strong>Our Ref:</strong>${b.ref}</div>`);
+    if(fields.style) rows.push(`<div class="bpc-field"><strong>Style:</strong>${b.style}</div>`);
+    if(fields.color) rows.push(`<div class="bpc-field"><strong>Color:</strong>${b.color}</div>`);
+    if(fields.bundleCode) rows.push(`<div class="bpc-field"><strong>Bundle No:</strong>${b.code}</div>`);
+    if(fields.layerNo) rows.push(`<div class="bpc-field"><strong>Layer No:</strong>${b.layerNo}</div>`);
+    if(fields.size) rows.push(`<div class="bpc-field"><strong>Size:</strong>${b.size}</div>`);
+    if(fields.qty) rows.push(`<div class="bpc-field"><strong>Quantity:</strong>${b.qty}</div>`);
+    if(fields.pcsRange) rows.push(`<div class="bpc-field"><strong>Piece Range:</strong>${b.pieceFrom} – ${b.pieceTo}</div>`);
+
+    const fieldsHtml=`<div class="bpc-fields">${rows.join('')}</div>`;
+    const qrHtml= qrPos!=='none' ? `<div class="bpc-qr"><div class="qr-box" id="qr-${idx}"></div></div>` : '';
+
+    card.innerHTML = fieldsHtml + qrHtml;
+    preview.appendChild(card);
+
+    if(qrPos!=='none'){
+      setTimeout(()=>{
+        const el=document.getElementById('qr-'+idx);
+        if(el){
+          el.innerHTML='';
+          new QRCode(el,{text:`${b.code}|${b.buyer}|${b.style}|${b.ref}|${b.color}|L${b.layerNo}|${b.size}|QTY:${b.qty}|${b.pieceFrom}-${b.pieceTo}`,width:68,height:68,colorDark:'#000',colorLight:'#fff'});
+        }
+      },100);
+    }
+  });
+
+  const btn=document.getElementById('printCountBtn');
+  if(btn) btn.textContent=`🖨 Print (${bundles.length} Cards)`;
+}
+
+function saveSettings(){
+  alert('✓ Settings saved successfully!');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderOrderTable();
+// Pre-select first order for demo
+selectOrder(1);
+</script>
+</body>
+</html>

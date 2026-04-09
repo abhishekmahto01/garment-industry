@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Style Reconciliation Report — IntelliSync ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0f12;
+    --surface: #14171c;
+    --surface2: #1c2028;
+    --border: #2a2f3a;
+    --accent: #00c896;
+    --accent2: #4f8ef7;
+    --warn: #f5a623;
+    --danger: #ff5e57;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --yellow-row: #2a2710;
+    --yellow-text: #f5d76e;
+    --blue-row: #0d1a2e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .nav-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: .04em;
+  }
+  .nav-brand span { color: var(--muted); }
+  .nav-links { display: flex; gap: 1.5rem; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color .2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .nav-links a.active { border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
+
+  /* MAIN */
+  .main { padding: 2rem; max-width: 1300px; margin: 0 auto; }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -.01em;
+  }
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,200,150,.1);
+    border: 1px solid rgba(0,200,150,.25);
+    color: var(--accent);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .badge::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--accent); display:inline-block; }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1.5fr auto;
+    gap: 12px;
+    margin-bottom: 1.75rem;
+    align-items: end;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .field select, .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .field select:focus, .field input:focus { border-color: var(--accent2); }
+  .search-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .03em;
+    transition: opacity .2s, transform .1s;
+    height: 38px;
+    white-space: nowrap;
+  }
+  .search-btn:hover { opacity: .9; }
+  .search-btn:active { transform: scale(.98); }
+
+  /* SUMMARY CARDS */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 1.75rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .stat-card .value {
+    font-size: 26px;
+    font-weight: 600;
+    margin-top: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .stat-card .sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .c-green .value { color: var(--accent); }
+  .c-blue .value  { color: var(--accent2); }
+  .c-warn .value  { color: var(--warn); }
+  .c-red .value   { color: var(--danger); }
+
+  /* PROGRESS BAR */
+  .prog-bar { height: 4px; background: var(--border); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 1s ease; }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .legend { display: flex; gap: 1rem; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 2px; }
+  .dot-yellow { background: var(--yellow-text); }
+  .dot-blue   { background: var(--accent2); }
+  .dot-plain  { background: var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr {
+    background: var(--surface2);
+  }
+  thead th {
+    padding: 10px 12px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-family: 'IBM Plex Mono', monospace;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child, thead th:nth-child(2), thead th:nth-child(3), thead th:nth-child(4) {
+    text-align: left;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:hover { background: rgba(255,255,255,.02); }
+  tbody td {
+    padding: 10px 12px;
+    text-align: right;
+    color: var(--text);
+  }
+  tbody td:first-child, tbody td:nth-child(2), tbody td:nth-child(3), tbody td:nth-child(4) {
+    text-align: left;
+  }
+  .sno { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* ROW TYPES */
+  .row-order    { background: rgba(79,142,247,.06); }
+  .row-total-qty { background: rgba(79,142,247,.04); }
+  .row-balance  { background: var(--yellow-row); }
+  .row-balance td { color: var(--yellow-text) !important; font-weight: 500; }
+  .row-zero td.size-total { color: var(--muted); }
+
+  /* PROCESS TAGS */
+  .proc {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+  }
+  .proc-cutting   { background: rgba(245,166,35,.12); color: #f5a623; }
+  .proc-stitching { background: rgba(79,142,247,.12); color: #4f8ef7; }
+  .proc-finishing { background: rgba(0,200,150,.1);   color: var(--accent); }
+  .proc-packing   { background: rgba(168,85,247,.12); color: #a855f7; }
+  .proc-kaj       { background: rgba(236,72,153,.1);  color: #ec4899; }
+  .proc-thread    { background: rgba(99,102,241,.12); color: #818cf8; }
+  .proc-heat      { background: rgba(239,68,68,.1);   color: #f87171; }
+  .proc-order     { background: rgba(255,255,255,.06); color: var(--muted); }
+
+  .size-total { font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+  .zero { color: var(--muted) !important; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+  }
+  .footer-text { font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+  @media (max-width: 900px) {
+    .filter-bar { grid-template-columns: 1fr 1fr; }
+    .summary-row { grid-template-columns: 1fr 1fr; }
+    .table-wrap { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">INTELLI<span>SYNC</span></div>
+  <div class="nav-links">
+    <a href="#">Master</a>
+    <a href="#">Cutting</a>
+    <a href="#">Bundling</a>
+    <a href="#">Stitching</a>
+    <a href="#" class="active">Reports</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Style Reconciliation Report</div>
+      <div class="page-subtitle">reports / style-reconciliation</div>
+    </div>
+    <div class="badge">Live Floor Data</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="field">
+      <label>Buyer</label>
+      <select>
+        <option>XYZ APPAREL PVT. LTD.</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Style</label>
+      <select>
+        <option>ABC-0000</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Our Ref</label>
+      <input type="text" value="5366" readonly/>
+    </div>
+    <div class="field">
+      <label>Color</label>
+      <select>
+        <option>JET BLACK</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <button class="search-btn">SEARCH</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-row">
+    <div class="stat-card c-green">
+      <div class="label">Order Qty</div>
+      <div class="value">4,040</div>
+      <div class="sub">Total across all sizes</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+    </div>
+    <div class="stat-card c-blue">
+      <div class="label">Cut So Far</div>
+      <div class="value">2,320</div>
+      <div class="sub">57.4% of order</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:57.4%;background:var(--accent2)"></div></div>
+    </div>
+    <div class="stat-card c-warn">
+      <div class="label">In Stitching</div>
+      <div class="value">494</div>
+      <div class="sub">Stitching input pending</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:12.2%;background:var(--warn)"></div></div>
+    </div>
+    <div class="stat-card c-red">
+      <div class="label">Cutting Balance</div>
+      <div class="value">1,720</div>
+      <div class="sub">Yet to be cut</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:42.6%;background:var(--danger)"></div></div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="table-title">Process-wise breakdown — JET BLACK</div>
+      <div class="legend">
+        <div class="legend-item"><div class="dot dot-yellow"></div> Balance row</div>
+        <div class="legend-item"><div class="dot dot-blue"></div> Total qty row</div>
+        <div class="legend-item"><div class="dot dot-plain"></div> Unit entry</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Unit / Vendor</th>
+          <th>Process</th>
+          <th>Section</th>
+          <th>L</th>
+          <th>M</th>
+          <th>S</th>
+          <th>XL</th>
+          <th>XXL</th>
+          <th>All Size</th>
+          <th>Size Total</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">IntelliSync ERP · Day 18 / 30 · Style Reconciliation Module</div>
+    <div class="footer-text">garment-industry / reports / style-reconciliation.html</div>
+  </div>
+
+</div>
+
+<script>
+const rows = [
+  { sno:1,  unit:'',        process:'Order Qty',      section:'',                        l:1152, m:1253, s:740, xl:638, xxl:257, all:'', total:4040, type:'order' },
+  { sno:2,  unit:'',        process:'Order Ex Qty',   section:'',                        l:1152, m:1253, s:740, xl:638, xxl:257, all:'', total:4040, type:'order' },
+  { sno:3,  unit:'Unit-2',  process:'Cutting',        section:'Cutting Entry',            l:654,  m:716,  s:424, xl:344, xxl:182, all:0,  total:2320, type:'unit' },
+  { sno:4,  unit:'Total Qty',process:'Cutting',       section:'Cutting Entry',            l:654,  m:716,  s:424, xl:344, xxl:182, all:0,  total:2320, type:'total' },
+  { sno:5,  unit:'Total Balance',process:'Cutting',   section:'Cutting Entry',            l:498,  m:537,  s:316, xl:294, xxl:75,  all:'', total:1720, type:'balance' },
+  { sno:6,  unit:'Unit-2',  process:'Cutting',        section:'Cutting - Ready to load',  l:190,  m:170,  s:85,  xl:100, xxl:30,  all:0,  total:575,  type:'unit' },
+  { sno:7,  unit:'Total Qty',process:'Cutting',       section:'Cutting - Ready to load',  l:190,  m:170,  s:85,  xl:100, xxl:30,  all:0,  total:575,  type:'total' },
+  { sno:8,  unit:'Total Balance',process:'Cutting',   section:'Cutting - Ready to load',  l:464,  m:546,  s:339, xl:244, xxl:152, all:0,  total:1745, type:'balance' },
+  { sno:9,  unit:'Unit-2',  process:'Stitching',      section:'Stitching - Input',        l:132,  m:170,  s:67,  xl:95,  xxl:30,  all:0,  total:494,  type:'unit' },
+  { sno:10, unit:'Total Qty',process:'Stitching',     section:'Stitching - Input',        l:132,  m:170,  s:67,  xl:95,  xxl:30,  all:0,  total:494,  type:'total' },
+  { sno:11, unit:'Total Balance',process:'Stitching', section:'Stitching - Input',        l:58,   m:0,    s:18,  xl:5,   xxl:0,   all:0,  total:81,   type:'balance' },
+  { sno:12, unit:'Total Qty',process:'Stitching',     section:'Stitching - Output',       l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:13, unit:'Total Balance',process:'Stitching', section:'Stitching - Output',       l:132,  m:170,  s:67,  xl:95,  xxl:30,  all:0,  total:494,  type:'balance' },
+  { sno:14, unit:'Total Qty',process:'Kaj Button',    section:'Kaj Button - Output',      l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:15, unit:'Total Qty',process:'Finishing',     section:'Finishing - Input',        l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:16, unit:'Total Qty',process:'Thread Cutting',section:'Thread Cutting Output',    l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:17, unit:'Total Qty',process:'Heat Transfer', section:'Heat Transfer - Output',   l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:18, unit:'Total Qty',process:'Finishing',     section:'Finishing - Final',        l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:19, unit:'Total Qty',process:'Packing',       section:'Packing - Output',         l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+  { sno:20, unit:'Total Qty',process:'Packing',       section:'Dispatch - Output',        l:'',   m:'',   s:'',  xl:'',  xxl:'',  all:'', total:0,    type:'total' },
+];
+
+const procClass = {
+  'Order Qty':'proc-order','Order Ex Qty':'proc-order',
+  'Cutting':'proc-cutting','Stitching':'proc-stitching',
+  'Finishing':'proc-finishing','Packing':'proc-packing',
+  'Kaj Button':'proc-kaj','Thread Cutting':'proc-thread','Heat Transfer':'proc-heat'
+};
+
+const tbody = document.getElementById('tbody');
+rows.forEach(r => {
+  const cls = r.type === 'balance' ? 'row-balance' : r.type === 'total' ? 'row-total-qty' : r.type === 'order' ? 'row-order' : '';
+  const pc = procClass[r.process] || 'proc-order';
+  const fmt = v => v === '' ? '<span class="zero">—</span>' : v === 0 ? '<span class="zero">0</span>' : v.toLocaleString();
+  const totalCls = r.total === 0 ? 'size-total zero' : 'size-total';
+  tbody.innerHTML += `<tr class="${cls}">
+    <td class="sno">${r.sno}</td>
+    <td>${r.unit}</td>
+    <td><span class="proc ${pc}">${r.process}</span></td>
+    <td style="color:var(--muted);font-size:12px">${r.section}</td>
+    <td>${fmt(r.l)}</td>
+    <td>${fmt(r.m)}</td>
+    <td>${fmt(r.s)}</td>
+    <td>${fmt(r.xl)}</td>
+    <td>${fmt(r.xxl)}</td>
+    <td>${fmt(r.all)}</td>
+    <td class="${totalCls}">${r.total === 0 ? '<span class="zero">0</span>' : r.total.toLocaleString()}</td>
+  </tr>`;
+});
+</script>
+</body>
+</html>

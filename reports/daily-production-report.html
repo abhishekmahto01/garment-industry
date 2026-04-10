@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Production Report — IntelliSync ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --blue-mid: #BFDBFE;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-300: #CBD5E1;
+    --gray-400: #94A3B8;
+    --gray-500: #64748B;
+    --gray-700: #334155;
+    --gray-900: #0F172A;
+    --green: #16A34A;
+    --green-light: #F0FDF4;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --amber: #D97706;
+    --amber-light: #FFFBEB;
+    --border: #E2E8F0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F1F5F9;
+    color: var(--gray-900);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--blue);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 18px; height: 18px; }
+  .logo-text { font-size: 15px; font-weight: 600; color: var(--gray-900); letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--gray-400); font-weight: 400; margin-top: 1px; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .badge-day {
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--blue-mid);
+  }
+
+  /* Main layout */
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  
+  /* Page title */
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gray-900);
+    letter-spacing: -0.4px;
+  }
+  .page-title span {
+    color: var(--blue);
+  }
+  .breadcrumb {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 3px;
+  }
+
+  /* Filter card */
+  .filter-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    align-items: end;
+  }
+  .filter-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .filter-group label .req { color: var(--red); margin-left: 2px; }
+  .filter-group input, .filter-group select {
+    width: 100%;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray-700);
+    background: white;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .filter-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+  }
+  .filter-group input:focus, .filter-group select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+  .btn-submit {
+    height: 38px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0 20px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn-submit:hover { background: #1D4ED8; }
+  .btn-submit:active { transform: scale(0.98); }
+
+  /* Table card */
+  .table-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .table-toolbar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; }
+  .btn-export {
+    display: flex; align-items: center; gap: 6px;
+    height: 34px;
+    border-radius: 7px;
+    padding: 0 14px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-excel {
+    background: var(--green-light);
+    color: var(--green);
+    border: 1px solid #BBF7D0;
+  }
+  .btn-excel:hover { background: #DCFCE7; }
+  .btn-pdf {
+    background: var(--red-light);
+    color: var(--red);
+    border: 1px solid #FECACA;
+  }
+  .btn-pdf:hover { background: #FEE2E2; }
+  .toolbar-right { display: flex; gap: 8px; align-items: center; }
+  .result-count {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+  .result-count strong { color: var(--gray-700); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    min-width: 1400px;
+  }
+  thead tr {
+    background: var(--gray-50);
+    border-bottom: 1.5px solid var(--border);
+  }
+  thead th {
+    padding: 10px 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    position: relative;
+  }
+  thead th:first-child { text-align: left; padding-left: 16px; }
+  .th-group {
+    background: #EFF6FF;
+    border-bottom: none;
+  }
+  .th-group th {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--blue);
+    padding: 6px 12px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .th-group .th-span {
+    border-left: 1px solid var(--blue-mid);
+  }
+  .col-header-group {
+    border-bottom: 1px solid var(--blue-mid);
+    background: #DBEAFE;
+    color: var(--blue) !important;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--gray-50); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td {
+    padding: 11px 12px;
+    text-align: center;
+    color: var(--gray-700);
+    font-size: 12.5px;
+  }
+  tbody td:first-child { text-align: left; padding-left: 16px; }
+  .cell-unit {
+    font-weight: 500;
+    color: var(--gray-900);
+  }
+  .cell-buyer {
+    text-align: left;
+    font-size: 11.5px;
+    color: var(--gray-500);
+  }
+  .cell-style {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--gray-100);
+    padding: 3px 7px;
+    border-radius: 4px;
+    color: var(--gray-700);
+  }
+  .cell-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .cell-num.highlight { color: var(--blue); }
+  .cell-num.zero { color: var(--gray-300); }
+  .cell-num.positive { color: var(--green); }
+  .total-row {
+    background: #EFF6FF !important;
+    border-top: 2px solid var(--blue-mid) !important;
+  }
+  .total-row td {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 12.5px;
+  }
+  .total-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue) !important;
+    letter-spacing: 0.3px;
+    text-align: left !important;
+    padding-left: 16px !important;
+  }
+  .checkbox-col { width: 36px; }
+  input[type="checkbox"] {
+    width: 14px; height: 14px;
+    accent-color: var(--blue);
+    cursor: pointer;
+  }
+
+  /* Color-coded qty pills */
+  .qty-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+  .qty-order { background: #EFF6FF; color: #1D4ED8; }
+  .qty-cut { background: #F0FDF4; color: #15803D; }
+  .qty-zero { background: var(--gray-100); color: var(--gray-400); }
+
+  /* Floating notice */
+  .notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--amber-light);
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: #92400E;
+  }
+
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .header { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">IntelliSync ERP</div>
+      <div class="logo-sub">Garment Manufacturing Suite</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="badge-day">Day 19 / 30 — Build in Public</span>
+  </div>
+</header>
+
+<main class="main">
+  <div class="page-title-row">
+    <div>
+      <div class="page-title">Daily <span>Production</span> Report</div>
+      <div class="breadcrumb">Reports &rsaquo; Production &rsaquo; Process-wise</div>
+    </div>
+  </div>
+
+  <div class="notice">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    Client data masked for demo — Buyer shown as <strong style="margin:0 3px">ABC Corp</strong> and styles as <strong style="margin:0 3px">XYZ-XXXX</strong>
+  </div>
+
+  <!-- Filter Panel -->
+  <div class="filter-card">
+    <div class="filter-grid">
+      <div class="filter-group">
+        <label>From Date</label>
+        <input type="date" id="fromDate" value="2026-03-30">
+      </div>
+      <div class="filter-group">
+        <label>To Date</label>
+        <input type="date" id="toDate" value="2026-04-11">
+      </div>
+      <div class="filter-group">
+        <label>Unit <span class="req">*</span></label>
+        <select id="unitSel">
+          <option value="Unit-2" selected>Unit-2</option>
+          <option value="Unit-1">Unit-1</option>
+          <option value="Unit-3">Unit-3</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Floor</label>
+        <select id="floorSel">
+          <option value="">Select Floor</option>
+          <option value="gf" selected>Ground Floor (Unit-2)</option>
+          <option value="1f">First Floor (Unit-2)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Line</label>
+        <select id="lineSel">
+          <option value="">Select Line</option>
+          <option value="cutting" selected>Cutting (GF-U2)</option>
+          <option value="stitching">Stitching (GF-U2)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Process <span class="req">*</span></label>
+        <select id="processSel">
+          <option value="Cutting" selected>Cutting</option>
+          <option value="Stitching">Stitching</option>
+          <option value="Finishing">Finishing</option>
+          <option value="Packing">Packing</option>
+        </select>
+      </div>
+      <div class="filter-group" style="display:flex; align-items:flex-end;">
+        <button class="btn-submit" onclick="loadReport()">
+          <svg style="display:inline;width:13px;height:13px;margin-right:5px;vertical-align:-1px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="toolbar-left">
+        <button class="btn-export btn-excel" onclick="exportToExcel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export Excel
+        </button>
+        <button class="btn-export btn-pdf" onclick="window.print()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Export PDF
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <span class="result-count">Showing <strong id="rowCount">5</strong> records</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="reportTable">
+        <thead>
+          <tr class="th-group">
+            <th colspan="2"></th>
+            <th colspan="4" class="col-header-group">Order Info</th>
+            <th colspan="3" class="col-header-group" style="border-left:2px solid #BFDBFE">Cutting</th>
+            <th colspan="3" class="col-header-group" style="border-left:2px solid #BFDBFE">Re-Cut</th>
+            <th colspan="3" class="col-header-group" style="border-left:2px solid #BFDBFE">Ready Load</th>
+            <th colspan="3" class="col-header-group" style="border-left:2px solid #BFDBFE">Stitch Input</th>
+          </tr>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+            <th style="text-align:left;min-width:220px">Buyer / Style / Colour</th>
+            <th>Our Ref</th>
+            <th>Order Qty</th>
+            <th>Order Ex Qty</th>
+            <th>Line</th>
+            <th style="border-left:2px solid #BFDBFE">Today</th>
+            <th>Period</th>
+            <th>Total</th>
+            <th style="border-left:2px solid #BFDBFE">Today</th>
+            <th>Period</th>
+            <th>Total</th>
+            <th style="border-left:2px solid #BFDBFE">Today</th>
+            <th>Period</th>
+            <th>Total</th>
+            <th style="border-left:2px solid #BFDBFE">Today</th>
+            <th>Period</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+        </tbody>
+        <tfoot id="reportFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const DATA = [
+  {
+    unit:"Unit-2", floor:"Ground Floor (Unit-2)", line:"Cutting (GF-U2)",
+    buyer:"ABC Corp", style:"XYZ-0082", ref:"5388", color:"EGRET",
+    orderQty:12670, orderExQty:12670,
+    cutToday:0, cutPeriod:495, cutTotal:495,
+    recutToday:0, recutPeriod:0, recutTotal:0,
+    rlToday:0, rlPeriod:0, rlTotal:0,
+    siToday:0, siPeriod:0, siTotal:0
+  },
+  {
+    unit:"Unit-2", floor:"Ground Floor (Unit-2)", line:"Cutting (GF-U2)",
+    buyer:"ABC Corp", style:"XYZ-0084A", ref:"5366", color:"JET BLACK",
+    orderQty:4040, orderExQty:4040,
+    cutToday:0, cutPeriod:2475, cutTotal:2475,
+    recutToday:0, recutPeriod:0, recutTotal:0,
+    rlToday:0, rlPeriod:0, rlTotal:0,
+    siToday:0, siPeriod:0, siTotal:0
+  },
+  {
+    unit:"Unit-2", floor:"Ground Floor (Unit-2)", line:"Cutting (GF-U2)",
+    buyer:"ABC Corp", style:"XYZ-0084B", ref:"5367", color:"PONDEROSA PINE",
+    orderQty:4668, orderExQty:4668,
+    cutToday:0, cutPeriod:3665, cutTotal:3665,
+    recutToday:0, recutPeriod:0, recutTotal:0,
+    rlToday:0, rlPeriod:0, rlTotal:0,
+    siToday:0, siPeriod:0, siTotal:0
+  },
+  {
+    unit:"Unit-2", floor:"Ground Floor (Unit-2)", line:"Cutting (GF-U2)",
+    buyer:"ABC Corp", style:"XYZ-0084C", ref:"5368", color:"TAWNY PORT",
+    orderQty:2252, orderExQty:2252,
+    cutToday:0, cutPeriod:2252, cutTotal:2252,
+    recutToday:0, recutPeriod:0, recutTotal:0,
+    rlToday:0, rlPeriod:0, rlTotal:0,
+    siToday:0, siPeriod:0, siTotal:0
+  },
+  {
+    unit:"Unit-2", floor:"Ground Floor (Unit-2)", line:"Cutting (GF-U2)",
+    buyer:"ABC Corp", style:"XYZ-0084D", ref:"5372", color:"MEDIEVAL BLUE",
+    orderQty:6835, orderExQty:6835,
+    cutToday:0, cutPeriod:4390, cutTotal:4390,
+    recutToday:0, recutPeriod:0, recutTotal:0,
+    rlToday:0, rlPeriod:0, rlTotal:0,
+    siToday:0, siPeriod:0, siTotal:0
+  }
+];
+
+function n(v) {
+  return v === 0
+    ? `<span class="cell-num zero">—</span>`
+    : `<span class="cell-num ${v > 0 ? 'highlight' : ''}">${v.toLocaleString()}</span>`;
+}
+
+function loadReport() {
+  const tbody = document.getElementById('reportBody');
+  const tfoot = document.getElementById('reportFoot');
+  tbody.innerHTML = '';
+
+  let totals = Array(12).fill(0);
+  const keys = ['orderQty','orderExQty','cutToday','cutPeriod','cutTotal','recutToday','recutPeriod','recutTotal','rlToday','rlPeriod','rlTotal','siToday','siPeriod','siTotal'];
+
+  DATA.forEach((r, i) => {
+    keys.forEach((k, j) => { if(j >= 2) totals[j-2] += r[k]; });
+    tbody.innerHTML += `
+    <tr>
+      <td><input type="checkbox" class="row-cb"></td>
+      <td>
+        <div style="font-weight:500;font-size:12.5px;color:var(--gray-900)">${r.buyer}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:3px">
+          <span class="cell-style">${r.style}</span>
+          <span style="font-size:11px;color:var(--gray-400)">${r.color}</span>
+        </div>
+      </td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray-500)">${r.ref}</span></td>
+      <td><span class="qty-tag qty-order">${r.orderQty.toLocaleString()}</span></td>
+      <td><span class="qty-tag qty-order">${r.orderExQty.toLocaleString()}</span></td>
+      <td style="font-size:11.5px;color:var(--gray-500)">${r.line}</td>
+      <td style="border-left:2px solid #BFDBFE">${n(r.cutToday)}</td>
+      <td><span class="qty-tag qty-cut">${r.cutPeriod.toLocaleString()}</span></td>
+      <td>${n(r.cutTotal)}</td>
+      <td style="border-left:2px solid #BFDBFE">${n(r.recutToday)}</td>
+      <td>${n(r.recutPeriod)}</td>
+      <td>${n(r.recutTotal)}</td>
+      <td style="border-left:2px solid #BFDBFE">${n(r.rlToday)}</td>
+      <td>${n(r.rlPeriod)}</td>
+      <td>${n(r.rlTotal)}</td>
+      <td style="border-left:2px solid #BFDBFE">${n(r.siToday)}</td>
+      <td>${n(r.siPeriod)}</td>
+      <td>${n(r.siTotal)}</td>
+    </tr>`;
+  });
+
+  const tot = totals;
+  tfoot.innerHTML = `
+  <tr class="total-row">
+    <td></td>
+    <td class="total-label">TOTAL</td>
+    <td></td>
+    <td><span class="qty-tag qty-order">${tot[0].toLocaleString()}</span></td>
+    <td><span class="qty-tag qty-order">${tot[1].toLocaleString()}</span></td>
+    <td></td>
+    <td style="border-left:2px solid #BFDBFE"><span class="cell-num">${tot[2].toLocaleString()}</span></td>
+    <td><span class="qty-tag qty-cut">${tot[3].toLocaleString()}</span></td>
+    <td><span class="cell-num highlight">${tot[4].toLocaleString()}</span></td>
+    <td style="border-left:2px solid #BFDBFE"><span class="cell-num zero">—</span></td>
+    <td><span class="cell-num zero">—</span></td>
+    <td><span class="cell-num zero">—</span></td>
+    <td style="border-left:2px solid #BFDBFE"><span class="cell-num zero">—</span></td>
+    <td><span class="cell-num zero">—</span></td>
+    <td><span class="cell-num zero">—</span></td>
+    <td style="border-left:2px solid #BFDBFE"><span class="cell-num zero">—</span></td>
+    <td><span class="cell-num zero">—</span></td>
+    <td><span class="cell-num zero">—</span></td>
+  </tr>`;
+
+  document.getElementById('rowCount').textContent = DATA.length;
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('.row-cb').forEach(c => c.checked = cb.checked);
+}
+
+function exportToExcel() {
+  const unit = document.getElementById('unitSel').value;
+  const process = document.getElementById('processSel').value;
+  const fromDate = document.getElementById('fromDate').value;
+  const toDate = document.getElementById('toDate').value;
+
+  const headers1 = ['Unit','Floor','Line','Buyer','Style','Colour','Our Ref','Order Qty','Order Ex Qty',
+    'Cut Today','Cut Period','Cut Total',
+    'Recut Today','Recut Period','Recut Total',
+    'Ready Load Today','Ready Load Period','Ready Load Total',
+    'Stitch Input Today','Stitch Input Period','Stitch Input Total'];
+
+  const rows = DATA.map(r => [
+    r.unit, r.floor, r.line, r.buyer, r.style, r.color, r.ref,
+    r.orderQty, r.orderExQty,
+    r.cutToday, r.cutPeriod, r.cutTotal,
+    r.recutToday, r.recutPeriod, r.recutTotal,
+    r.rlToday, r.rlPeriod, r.rlTotal,
+    r.siToday, r.siPeriod, r.siTotal
+  ]);
+
+  const totals = ['','','','TOTAL','','','',
+    DATA.reduce((s,r)=>s+r.orderQty,0),
+    DATA.reduce((s,r)=>s+r.orderExQty,0),
+    DATA.reduce((s,r)=>s+r.cutToday,0),
+    DATA.reduce((s,r)=>s+r.cutPeriod,0),
+    DATA.reduce((s,r)=>s+r.cutTotal,0),
+    0,0,0,0,0,0,0,0,0
+  ];
+
+  const wb = XLSX.utils.book_new();
+  const wsData = [
+    [`Daily Production Report — ${process} | ${unit}`],
+    [`Period: ${fromDate} to ${toDate}`],
+    [],
+    headers1,
+    ...rows,
+    [],
+    totals
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  ws['!cols'] = headers1.map((_,i) => ({ wch: i < 3 ? 20 : i < 7 ? 14 : 10 }));
+
+  const titleCell = ws['A1'];
+  if(titleCell) titleCell.s = { font: { bold: true, sz: 13 }, fill: { fgColor: { rgb: "EFF6FF" } } };
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Production Report');
+  XLSX.writeFile(wb, `DPR_${unit}_${process}_${fromDate}_to_${toDate}.xlsx`);
+}
+
+loadReport();
+</script>
+</body>
+</html>

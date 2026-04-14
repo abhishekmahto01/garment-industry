@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Style Transaction Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f5f7fa;
+  --border: #e2e8f0;
+  --text: #1a2942;
+  --text-muted: #64748b;
+  --text-hint: #94a3b8;
+  --green: #16a34a;
+  --green-cell: #d1fae5;
+  --accent: #0f5fa8;
+  --header-bg: #0a1628;
+  --header-text: #e8f4ff;
+}
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* NAV */
+.topnav {
+  background: var(--header-bg); color: var(--header-text);
+  padding: 0 32px; height: 52px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 100;
+}
+.brand { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+.brand-badge { background: #1e3a5f; border-radius: 6px; padding: 3px 10px; font-size: 11px; color: #7eb8f7; }
+.nav-right { font-size: 12px; color: #4a7aaa; display: flex; align-items: center; gap: 6px; }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: #16a34a; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ══════════════
+   SCREEN 1
+══════════════ */
+.s1-wrap {
+  min-height: calc(100vh - 52px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+.s1-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; width: 100%; max-width: 640px;
+  box-shadow: 0 6px 30px rgba(10,22,40,0.09); overflow: hidden;
+}
+.s1-head {
+  background: var(--header-bg); padding: 28px 32px;
+}
+.s1-eyebrow { font-size: 10px; color: #4a7aaa; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+.s1-head h1 { font-size: 22px; font-weight: 600; color: var(--header-text); line-height: 1.25; }
+.s1-head p  { font-size: 12px; color: #6a8aaa; margin-top: 6px; }
+.s1-body { padding: 28px 32px; }
+
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.9px; }
+.fg select {
+  padding: 10px 34px 10px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--surface); color: var(--text); font-size: 13px;
+  font-family: 'Outfit', sans-serif; width: 100%; transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.fg select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,95,168,0.1); }
+.fg select.filled { border-color: #16a34a; }
+.fg select:disabled { opacity: 0.45; cursor: not-allowed; background-color: var(--surface2); }
+
+.s1-footer { display: flex; justify-content: space-between; align-items: center; }
+.s1-hint { font-size: 12px; color: var(--text-hint); }
+.btn-search {
+  background: #16a34a; color: white; border: none;
+  padding: 11px 30px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'Outfit', sans-serif; letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-search:hover:not(:disabled) { background: #15803d; }
+.btn-search:active:not(:disabled) { transform: scale(0.98); }
+.btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.s1-divider { height: 1px; background: var(--border); margin: 22px 0; }
+.recent-label { font-size: 10px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.recent-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.recent-chip {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+  padding: 5px 14px; font-size: 11px; color: var(--text-muted); cursor: pointer;
+  transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+}
+.recent-chip:hover { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+.rc-dot { width: 5px; height: 5px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+
+.spinner-wrap { display: none; align-items: center; gap: 10px; padding: 12px 0 4px; }
+.spinner-wrap.show { display: flex; }
+.spinner {
+  width: 20px; height: 20px; border: 2px solid var(--border);
+  border-top-color: #16a34a; border-radius: 50%;
+  animation: spin 0.65s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-wrap span { font-size: 12px; color: var(--text-muted); }
+
+/* ══════════════
+   SCREEN 2
+══════════════ */
+.s2-bar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 14px 32px; display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px; position: sticky; top: 52px; z-index: 90;
+}
+.s2-bar-left h2 { font-size: 16px; font-weight: 600; }
+.s2-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
+.s2-chip {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 12px; font-size: 11px; color: var(--text-muted);
+}
+.s2-chip strong { color: var(--text); }
+.s2-btns { display: flex; gap: 8px; }
+.btn-a {
+  padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: 'Outfit', sans-serif; border: 1.5px solid;
+  transition: all 0.15s; white-space: nowrap;
+}
+.b-exp  { background: var(--accent); color: #fff; border-color: var(--accent); }
+.b-exp:hover  { background: #0d4f8a; }
+.b-pdf  { background: #dc2626; color: #fff; border-color: #dc2626; }
+.b-pdf:hover  { background: #b91c1c; }
+.b-back { background: var(--surface); color: var(--text-muted); border-color: var(--border); }
+.b-back:hover { background: var(--surface2); }
+
+/* progress */
+.prog-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; padding: 16px 32px; }
+.pc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.pc-lbl { font-size: 9px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; font-weight: 600; }
+.pc-row { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 11px; margin-bottom: 5px; }
+.pc-done { color: var(--green); font-weight: 500; }
+.pc-bal  { color: var(--text-hint); }
+.pc-bar  { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.pc-fill { height: 4px; border-radius: 2px; }
+
+/* table */
+.tbl-wrap { padding: 0 32px 32px; }
+.tbl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.tbl-hdr {
+  background: var(--surface2); padding: 11px 18px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.tbl-hdr span { font-size: 12px; font-weight: 600; }
+.legend { display: flex; gap: 12px; list-style: none; font-size: 10px; color: var(--text-muted); }
+.legend li { display: flex; align-items: center; gap: 4px; }
+.lsq { width: 9px; height: 9px; border-radius: 2px; }
+
+.scroll-x { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 11.5px; min-width: 1300px; }
+
+thead tr.tr1 { background: #0a1628; }
+thead tr.tr1 th {
+  padding: 8px 6px; text-align: center; font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  color: #7eb8f7; border-right: 1px solid #1e3a5f;
+}
+thead tr.tr1 th.th-fixed { background: #060e1f; color: #4a7aaa; font-size: 9px; }
+thead tr.tr1 th:first-child { text-align: left; padding-left: 14px; }
+
+thead tr.tr2 { background: #0d2240; }
+thead tr.tr2 th {
+  padding: 6px 6px; text-align: center; font-size: 9px;
+  color: #5a8aaf; border-right: 1px solid #1e3a5f; white-space: nowrap;
+}
+
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:hover { background: #f8fafc; }
+tbody td {
+  padding: 8px 6px; text-align: center;
+  color: var(--text-muted); border-right: 1px solid #f1f5f9;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+}
+tbody td:first-child {
+  text-align: left; padding-left: 14px;
+  color: var(--text); font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 500;
+}
+.td-fix  { color: var(--text) !important; font-weight: 500; }
+.td-day  { color: var(--text-muted); }
+.td-day.z { color: #cbd5e1; }
+.td-cum  { background: var(--green-cell); color: #15803d; font-weight: 500; }
+.td-bal  { color: var(--text-hint); }
+
+tfoot tr { background: var(--surface2); border-top: 2px solid var(--border); }
+tfoot td {
+  padding: 9px 6px; text-align: center;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  font-weight: 600; color: var(--text); border-right: 1px solid var(--border);
+}
+tfoot td:first-child { text-align: left; padding-left: 14px; font-family: 'Outfit', sans-serif; }
+tfoot .td-cum { background: #b4f0cf; color: #0f7a38; }
+
+@media (max-width: 680px) {
+  .field-grid { grid-template-columns: 1fr; }
+  .prog-strip { grid-template-columns: 1fr 1fr; padding: 12px 16px; }
+  .tbl-wrap   { padding: 0 12px 24px; }
+  .s2-bar, .topnav { padding-left: 16px; padding-right: 16px; }
+  .s1-body    { padding: 20px 18px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">🏭 Garment ERP <span class="brand-badge">Unit-2</span></div>
+  <div class="nav-right"><span class="nav-dot"></span> Style Transaction Report</div>
+</nav>
+
+<!-- ══════════════════════════
+     SCREEN 1 — FILTER FORM
+══════════════════════════ -->
+<div class="screen active" id="screen1">
+  <div class="s1-wrap">
+    <div class="s1-card">
+      <div class="s1-head">
+        <div class="s1-eyebrow">Production Reports · Unit-2</div>
+        <h1>Style Transaction<br>Report Summary</h1>
+        <p>Select buyer, style and color to view day-wise production transactions</p>
+      </div>
+      <div class="s1-body">
+
+        <div class="field-grid">
+          <div class="fg">
+            <label>Buyer</label>
+            <select id="f-buyer" onchange="onBuyer()">
+              <option value="">— Select Buyer —</option>
+              <option>ABC Ltd.</option>
+              <option>PQR Exports</option>
+              <option>XYZ Brands</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Style</label>
+            <select id="f-style" disabled onchange="onStyle()">
+              <option value="">— Select Style —</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Ourref / PO</label>
+            <select id="f-ourref" disabled onchange="onOurref()">
+              <option value="">— Select Ourref —</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Color</label>
+            <select id="f-color" disabled onchange="checkReady()">
+              <option value="">— Select Color —</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="spinner-wrap" id="s1-spin">
+          <div class="spinner"></div>
+          <span>Fetching report data…</span>
+        </div>
+
+        <div class="s1-footer">
+          <span class="s1-hint" id="s1-hint">Fill all fields to search</span>
+          <button class="btn-search" id="btn-srch" disabled onclick="doSearch()">
+            SEARCH &nbsp;→
+          </button>
+        </div>
+
+        <div class="s1-divider"></div>
+        <div class="recent-label">Recent searches</div>
+        <div class="recent-chips">
+          <div class="recent-chip" onclick="quickFill('ABC Ltd.','XY-0000','5366','Jet Black')">
+            <span class="rc-dot"></span> ABC Ltd. · XY-0000 · Jet Black
+          </div>
+          <div class="recent-chip" onclick="quickFill('PQR Exports','PQ-1100','7712','Navy Blue')">
+            <span class="rc-dot"></span> PQR Exports · PQ-1100 · Navy Blue
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SCREEN 2 — REPORT TABLE
+══════════════════════════ -->
+<div class="screen" id="screen2">
+
+  <div class="s2-bar">
+    <div class="s2-bar-left">
+      <h2>Day wise Style Transaction Report</h2>
+      <div class="s2-chips" id="s2-chips"></div>
+    </div>
+    <div class="s2-btns">
+      <button class="btn-a b-exp"  onclick="exportCSV()">EXPORT</button>
+      <button class="btn-a b-pdf"  onclick="window.print()">EXPORT PDF</button>
+      <button class="btn-a b-back" onclick="goBack()">← BACK</button>
+    </div>
+  </div>
+
+  <div class="prog-strip" id="prog-strip"></div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-card">
+      <div class="tbl-hdr">
+        <span id="tbl-count">—</span>
+        <ul class="legend">
+          <li><div class="lsq" style="background:#d1fae5;border:1px solid #16a34a;"></div> Cumulative</li>
+          <li><div class="lsq" style="background:#f1f5f9;border:1px solid #e2e8f0;"></div> Daily / Balance</li>
+        </ul>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead>
+            <tr class="tr1">
+              <th rowspan="2" style="text-align:left;padding-left:14px;">Date</th>
+              <th rowspan="2" class="th-fixed">Order<br>Qty</th>
+              <th rowspan="2" class="th-fixed">Order<br>Ex Qty</th>
+              <th colspan="3">Cutting Entry</th>
+              <th colspan="3">Cutting – Ready to Load</th>
+              <th colspan="3">Stitching Input</th>
+              <th colspan="3">Stitching Output</th>
+              <th colspan="3">Kaj &amp; Button</th>
+              <th colspan="3">Thread Cutting</th>
+              <th colspan="3">Finishing Final</th>
+              <th colspan="3">Packing</th>
+              <th colspan="3">Dispatch</th>
+            </tr>
+            <tr class="tr2">
+              <th>–</th><th>–</th><th>–</th>
+              <th>Cut Qty</th><th>Cumul</th><th>Balance</th>
+              <th>RTL Qty</th><th>Cumul</th><th>Balance</th>
+              <th>St-In Qty</th><th>Cumul</th><th>Balance</th>
+              <th>St-Out Qty</th><th>Cumul</th><th>Balance</th>
+              <th>Kaj Qty</th><th>Cumul</th><th>Balance</th>
+              <th>Thr Qty</th><th>Cumul</th><th>Balance</th>
+              <th>Fin Qty</th><th>Cumul</th><th>Balance</th>
+              <th>Pack Qty</th><th>Cumul</th><th>Balance</th>
+              <th>Disp Qty</th><th>Cumul</th><th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="r-tbody"></tbody>
+          <tfoot id="r-tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA STORE ── */
+const DB = {
+  'ABC Ltd.': {
+    'XY-0000': { '5366': ['Jet Black','Navy Blue'] },
+    'XY-1122': { '6001': ['White','Grey Melange'] }
+  },
+  'PQR Exports': {
+    'PQ-1100': { '7712': ['Navy Blue','Royal Blue'] }
+  },
+  'XYZ Brands': {
+    'XZ-9900': { '8800': ['Red','Black'] }
+  }
+};
+
+const TXN = {
+  'ABC Ltd.|XY-0000|5366|Jet Black': {
+    oq:3776, ex:4040,
+    rows:[
+      {d:'04-04-2026',cut:2010,rtl:0,   si:0,  so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'06-04-2026',cut:150, rtl:201, si:0,  so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'07-04-2026',cut:160, rtl:374, si:278,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'09-04-2026',cut:0,   rtl:0,   si:216,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'10-04-2026',cut:155, rtl:413, si:494,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'11-04-2026',cut:0,   rtl:936, si:685,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'13-04-2026',cut:0,   rtl:545, si:682,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'14-04-2026',cut:0,   rtl:0,   si:33, so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+    ]
+  },
+  'ABC Ltd.|XY-0000|5366|Navy Blue': {
+    oq:1200, ex:1300,
+    rows:[
+      {d:'05-04-2026',cut:400,rtl:0,  si:0,  so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'08-04-2026',cut:500,rtl:400,si:0,  so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'11-04-2026',cut:200,rtl:500,si:350,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+    ]
+  },
+  'PQR Exports|PQ-1100|7712|Navy Blue': {
+    oq:2400, ex:2500,
+    rows:[
+      {d:'01-04-2026',cut:800,rtl:0,  si:0,  so:0,  kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'03-04-2026',cut:700,rtl:800,si:0,  so:0,  kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'05-04-2026',cut:500,rtl:600,si:700,so:0,  kaj:0,thr:0,fin:0,pk:0,dp:0},
+      {d:'08-04-2026',cut:400,rtl:900,si:500,so:400,kaj:0,thr:0,fin:0,pk:0,dp:0},
+    ]
+  }
+};
+
+const KEYS   = ['cut','rtl','si','so','kaj','thr','fin','pk','dp'];
+const COLORS  = ['#16a34a','#1d6fb8','#d97706','#7c3aed','#0891b2','#be185d','#b45309','#1e40af','#047857'];
+const PLABELS = ['Cutting','Ready to Load','Stitching Input','Stitching Output','Kaj & Button','Thread Cutting','Finishing Final','Packing','Dispatch'];
+
+/* ── CASCADE SELECTS ── */
+function setOpts(id, list, disabled) {
+  const s = document.getElementById(id);
+  const placeholder = { 'f-style':'Style','f-ourref':'Ourref','f-color':'Color' }[id] || '';
+  s.innerHTML = `<option value="">— Select ${placeholder} —</option>` +
+    list.map(v => `<option>${v}</option>`).join('');
+  s.disabled = disabled;
+  s.classList.remove('filled');
+}
+
+function onBuyer() {
+  const b = v('f-buyer');
+  mark('f-buyer', !!b);
+  setOpts('f-style',  b ? Object.keys(DB[b]) : [], !b);
+  setOpts('f-ourref', [], true);
+  setOpts('f-color',  [], true);
+  checkReady();
+}
+function onStyle() {
+  const b = v('f-buyer'), s = v('f-style');
+  mark('f-style', !!s);
+  setOpts('f-ourref', s ? Object.keys(DB[b][s]) : [], !s);
+  setOpts('f-color',  [], true);
+  checkReady();
+}
+function onOurref() {
+  const b = v('f-buyer'), s = v('f-style'), o = v('f-ourref');
+  mark('f-ourref', !!o);
+  setOpts('f-color', o ? DB[b][s][o] : [], !o);
+  checkReady();
+}
+function v(id)       { return document.getElementById(id).value; }
+function mark(id, ok){ document.getElementById(id).classList.toggle('filled', ok); }
+
+function checkReady() {
+  mark('f-color', !!v('f-color'));
+  const all = ['f-buyer','f-style','f-ourref','f-color'].every(id => !!v(id));
+  document.getElementById('btn-srch').disabled = !all;
+  document.getElementById('s1-hint').textContent = all ? 'Ready — click Search' : 'Fill all fields to search';
+}
+
+/* ── QUICK FILL ── */
+function quickFill(buyer, style, ourref, color) {
+  document.getElementById('f-buyer').value = buyer; onBuyer();
+  setTimeout(() => {
+    document.getElementById('f-style').value = style; onStyle();
+    setTimeout(() => {
+      document.getElementById('f-ourref').value = ourref; onOurref();
+      setTimeout(() => {
+        document.getElementById('f-color').value = color; checkReady();
+      }, 50);
+    }, 50);
+  }, 50);
+}
+
+/* ── SEARCH ── */
+function doSearch() {
+  document.getElementById('btn-srch').disabled = true;
+  document.getElementById('s1-hint').textContent = 'Loading…';
+  document.getElementById('s1-spin').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('s1-spin').classList.remove('show');
+    buildReport(v('f-buyer'), v('f-style'), v('f-ourref'), v('f-color'));
+    showScreen('screen2');
+  }, 750);
+}
+
+/* ── BUILD REPORT ── */
+function buildReport(buyer, style, ourref, color) {
+  const key  = `${buyer}|${style}|${ourref}|${color}`;
+  const data = TXN[key] || fallback();
+  const { oq, ex, rows } = data;
+
+  /* chips */
+  document.getElementById('s2-chips').innerHTML =
+    [['Buyer',buyer],['Style',style],['Ourref',ourref],['Color',color],['Unit','Unit-2']]
+    .map(([l,val]) => `<div class="s2-chip">${l}: <strong>${val}</strong></div>`).join('');
+
+  /* progress strip — show only first 4 stages */
+  document.getElementById('prog-strip').innerHTML = KEYS.slice(0,4).map((k,i) => {
+    const done = rows.reduce((s,r) => s + r[k], 0);
+    const bal  = ex - done;
+    const pct  = Math.min(100, Math.round(done / ex * 100));
+    return `<div class="pc">
+      <div class="pc-lbl">${PLABELS[i]}</div>
+      <div class="pc-row"><span class="pc-done">${done.toLocaleString()} done</span><span class="pc-bal">${bal.toLocaleString()} bal</span></div>
+      <div class="pc-bar"><div class="pc-fill" style="width:${pct}%;background:${COLORS[i]};"></div></div>
+    </div>`;
+  }).join('');
+
+  /* cumulative per row */
+  const computed = rows.map((r, i) => {
+    const ext = {};
+    KEYS.forEach(k => {
+      ext[k+'_c'] = rows.slice(0, i+1).reduce((s,x) => s + x[k], 0);
+      ext[k+'_b'] = ex - ext[k+'_c'];
+    });
+    return { ...r, ...ext };
+  });
+
+  /* totals */
+  const totals = {};
+  KEYS.forEach(k => totals[k] = rows.reduce((s,r) => s + r[k], 0));
+
+  /* tbody */
+  document.getElementById('r-tbody').innerHTML = computed.map(r => {
+    const cells = KEYS.map(k =>
+      `<td class="td-day${r[k]===0?' z':''}">${r[k]}</td>
+       <td class="td-cum">${r[k+'_c']}</td>
+       <td class="td-bal">${r[k+'_b']}</td>`
+    ).join('');
+    return `<tr>
+      <td>${r.d}</td>
+      <td class="td-fix">${oq.toLocaleString()}</td>
+      <td class="td-fix">${ex.toLocaleString()}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  /* tfoot */
+  document.getElementById('r-tfoot').innerHTML = `<tr>
+    <td>TOTAL</td>
+    <td>${oq.toLocaleString()}</td>
+    <td>${ex.toLocaleString()}</td>
+    ${KEYS.map(k => `<td>${totals[k].toLocaleString()}</td>
+      <td class="td-cum">${totals[k].toLocaleString()}</td>
+      <td>${(ex-totals[k]).toLocaleString()}</td>`).join('')}
+  </tr>`;
+
+  document.getElementById('tbl-count').textContent = `Transaction Details — ${rows.length} entries`;
+  window._rd = { buyer, style, ourref, color, oq, ex, computed };
+}
+
+function fallback() {
+  return { oq:2000, ex:2200, rows:[
+    {d:'07-04-2026',cut:500,rtl:0,  si:0,  so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+    {d:'09-04-2026',cut:600,rtl:500,si:0,  so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+    {d:'11-04-2026',cut:400,rtl:550,si:480,so:0,kaj:0,thr:0,fin:0,pk:0,dp:0},
+  ]};
+}
+
+/* ── NAVIGATION ── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function goBack() {
+  document.getElementById('btn-srch').disabled = false;
+  document.getElementById('s1-hint').textContent = 'Ready — click Search';
+  showScreen('screen1');
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV() {
+  if (!window._rd) return;
+  const { buyer, style, color, oq, ex, computed } = window._rd;
+  const hdrs = ['Date','Order Qty','Order Ex Qty',
+    ...KEYS.flatMap((k,i) => [`${PLABELS[i]} Qty`,`Cumul`,`Balance`])];
+  const lines = [hdrs.join(','),
+    ...computed.map(r => [r.d, oq, ex, ...KEYS.flatMap(k => [r[k], r[k+'_c'], r[k+'_b']])].join(','))
+  ];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/csv'}));
+  a.download = `style-txn-${style}-${color.replace(/\s/g,'-')}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>

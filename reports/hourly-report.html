@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hourly Report — Garment ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f0f0f;
+      --surface:  #181818;
+      --border:   #2a2a2a;
+      --accent:   #c8f542;
+      --accent2:  #42f5c8;
+      --muted:    #555;
+      --text:     #e8e8e2;
+      --text-dim: #888;
+      --danger:   #f54242;
+      --warn:     #f5a442;
+      --font-head: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+    .page-header h1 {
+      font-family: var(--font-head);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .page-header .day-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 4px 10px;
+      border-radius: 2px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Filter Card ── */
+    .filter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .filter-group input,
+    .filter-group select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 8px 12px;
+      min-width: 160px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus { border-color: var(--accent); }
+    .filter-group select option { background: var(--surface); }
+
+    .btn {
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 9px 24px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover { background: #d4f75c; transform: translateY(-1px); }
+    .btn-export {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--accent2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 7px 14px;
+    }
+    .btn-export:hover { border-color: var(--accent2); background: rgba(66,245,200,0.06); }
+
+    /* ── Table Container ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .export-btns { display: flex; gap: 8px; }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 10px;
+    }
+    .search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      width: 180px;
+    }
+    .search-box svg { color: var(--muted); flex-shrink: 0; }
+
+    /* ── Table ── */
+    .table-scroll { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr {
+      background: #111;
+      border-bottom: 1px solid var(--border);
+    }
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+    }
+    thead th:hover { color: var(--accent); }
+    thead th .sort-icon { margin-left: 4px; opacity: 0.4; font-size: 9px; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(200,245,66,0.03); }
+
+    tbody td {
+      padding: 12px 14px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    tbody td:first-child input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+
+    .line-badge {
+      display: inline-block;
+      background: rgba(200,245,66,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(200,245,66,0.25);
+      border-radius: 3px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .buyer-tag {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+    .style-code {
+      color: var(--accent2);
+      font-weight: 500;
+    }
+
+    .hour-cell {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      min-width: 60px;
+    }
+    .hour-cell.zero { color: var(--muted); }
+    .hour-cell.high { color: var(--accent); font-weight: 500; }
+    .hour-cell.mid  { color: var(--text); }
+
+    /* ── Total Row ── */
+    .total-row td {
+      background: rgba(200,245,66,0.05);
+      border-top: 1px solid rgba(200,245,66,0.2);
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .total-row td.hour-cell { color: var(--accent); }
+
+    /* ── Footer ── */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ── Mini Sparkbar ── */
+    .spark { display: flex; gap: 2px; align-items: flex-end; height: 20px; }
+    .spark-bar {
+      width: 5px;
+      border-radius: 1px;
+      background: var(--accent);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .spark-bar.zero { background: var(--border); opacity: 1; }
+
+    /* ── Animate in ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .filter-card  { animation: fadeUp 0.35s ease both; }
+    .table-wrapper{ animation: fadeUp 0.45s ease 0.05s both; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      .page-header h1 { font-size: 1.5rem; }
+      .filter-card { flex-direction: column; align-items: stretch; }
+      .filter-group input, .filter-group select { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Hourly Report</h1>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:0.05em;">Process-wise hourly production tracking</p>
+    </div>
+    <span class="day-badge">Day 21</span>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card">
+    <div class="filter-group">
+      <label>To Date</label>
+      <input type="date" id="filter-date" value="2026-04-13"/>
+    </div>
+    <div class="filter-group">
+      <label>Unit</label>
+      <select id="filter-unit">
+        <option value="">All Units</option>
+        <option value="Unit-1">Unit-1</option>
+        <option value="Unit-2" selected>Unit-2</option>
+        <option value="Unit-3">Unit-3</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Process</label>
+      <select id="filter-process">
+        <option value="">All Processes</option>
+        <option value="Cutting" selected>Cutting</option>
+        <option value="Stitching">Stitching</option>
+        <option value="Finishing">Finishing</option>
+        <option value="Packing">Packing</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="applyFilters()">Submit</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <div class="table-toolbar">
+      <div class="export-btns">
+        <button class="btn btn-export" onclick="exportCSV()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 8l4 4 4-4"/><path d="M2 14h12"/></svg>
+          Export
+        </button>
+        <button class="btn btn-export" onclick="exportPDF()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 8l4 4 4-4"/><path d="M2 14h12"/></svg>
+          Export PDF
+        </button>
+      </div>
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/></svg>
+        <input type="text" id="search-input" placeholder="Search buyer, style…" oninput="filterTable()"/>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table id="hourly-table">
+        <thead>
+          <tr>
+            <th style="width:36px"><input type="checkbox" id="select-all" onchange="toggleAll(this)"/></th>
+            <th onclick="sortTable(1)">Line <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(2)">Buyer <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(3)">Style <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(4)" style="text-align:right">Hour-1 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(5)" style="text-align:right">Hour-2 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(6)" style="text-align:right">Hour-3 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(7)" style="text-align:right">Hour-4 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(8)" style="text-align:right">Hour-5 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(9)" style="text-align:right">Hour-6 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(10)" style="text-align:right">Hour-7 <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable(11)" style="text-align:right">Hour-8 <span class="sort-icon">↕</span></th>
+            <th style="text-align:right">Trend</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+        <tfoot id="table-foot"></tfoot>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span id="row-count">Showing 2 rows</span>
+      <span id="total-summary"></span>
+    </div>
+  </div>
+
+  <script>
+    const DATA = [
+      { line: "Cutting (GF-U2)", buyer: "Buyer ABC", style: "Style XYZ", hours: [0, 195, 410, 195, 0, 220, 180, 0] },
+      { line: "Cutting (GF-U2)", buyer: "Buyer ABC", style: "Style XYZ", hours: [0, 205, 0, 195, 0, 190, 210, 0] },
+    ];
+
+    let filtered = [...DATA];
+
+    function classifyCell(v, max) {
+      if (v === 0) return 'zero';
+      if (v >= max * 0.7) return 'high';
+      return 'mid';
+    }
+
+    function renderSpark(hours) {
+      const max = Math.max(...hours, 1);
+      return `<div class="spark">${hours.map(h => {
+        const pct = Math.round((h / max) * 18);
+        return `<div class="spark-bar ${h===0?'zero':''}" style="height:${Math.max(pct,2)}px"></div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('table-body');
+      const tfoot = document.getElementById('table-foot');
+
+      const totals = Array(8).fill(0);
+      filtered.forEach(r => r.hours.forEach((h,i) => totals[i] += h));
+      const maxH = Math.max(...filtered.flatMap(r => r.hours), 1);
+
+      tbody.innerHTML = filtered.map((r, idx) => `
+        <tr>
+          <td><input type="checkbox" class="row-cb"/></td>
+          <td><span class="line-badge">${r.line}</span></td>
+          <td><span class="buyer-tag">${r.buyer}</span></td>
+          <td><span class="style-code">${r.style}</span></td>
+          ${r.hours.map(h => `<td class="hour-cell ${classifyCell(h, maxH)}">${h}</td>`).join('')}
+          <td>${renderSpark(r.hours)}</td>
+        </tr>`).join('');
+
+      tfoot.innerHTML = `<tr class="total-row">
+        <td></td>
+        <td colspan="3" style="font-family:var(--font-head);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;">Total</td>
+        ${totals.map(t => `<td class="hour-cell">${t}</td>`).join('')}
+        <td></td>
+      </tr>`;
+
+      document.getElementById('row-count').textContent = `Showing ${filtered.length} row${filtered.length!==1?'s':''}`;
+      const grandTotal = totals.reduce((a,b)=>a+b,0);
+      document.getElementById('total-summary').textContent = `Grand total: ${grandTotal.toLocaleString()} pcs`;
+    }
+
+    function applyFilters() {
+      filtered = [...DATA];
+      renderTable();
+      // flash feedback
+      document.querySelector('.table-wrapper').style.outline = '1px solid var(--accent)';
+      setTimeout(() => document.querySelector('.table-wrapper').style.outline = 'none', 400);
+    }
+
+    function filterTable() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      filtered = DATA.filter(r =>
+        r.buyer.toLowerCase().includes(q) ||
+        r.style.toLowerCase().includes(q) ||
+        r.line.toLowerCase().includes(q)
+      );
+      renderTable();
+    }
+
+    function toggleAll(cb) {
+      document.querySelectorAll('.row-cb').forEach(c => c.checked = cb.checked);
+    }
+
+    let sortDir = 1;
+    function sortTable(col) {
+      sortDir *= -1;
+      filtered.sort((a, b) => {
+        const vals = [null, a.line, a.buyer, a.style, ...a.hours];
+        const valb = [null, b.line, b.buyer, b.style, ...b.hours];
+        return String(vals[col]).localeCompare(String(valb[col]), undefined, {numeric:true}) * sortDir;
+      });
+      renderTable();
+    }
+
+    function exportCSV() {
+      const headers = ['Line','Buyer','Style','H1','H2','H3','H4','H5','H6','H7','H8'];
+      const rows = filtered.map(r => [r.line, r.buyer, r.style, ...r.hours].join(','));
+      const csv = [headers.join(','), ...rows].join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'hourly-report.csv';
+      a.click();
+    }
+
+    function exportPDF() { window.print(); }
+
+    renderTable();
+  </script>
+</body>
+</html>
